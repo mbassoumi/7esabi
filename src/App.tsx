@@ -7,8 +7,6 @@ import LanguageSelector from "./components/LanguageSelector";
 import AccountForm from "./pages/AccountForm";
 import TransactionForm from "./pages/TransactionForm";
 import Account from "./pages/Account";
-import TransactionCard from "./components/TransactionCard";
-import CURRENCIES from "./api/currency";
 
 const App = () => {
     const {i18n} = useTranslation()
