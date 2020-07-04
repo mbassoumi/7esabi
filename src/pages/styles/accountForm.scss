@@ -1,0 +1,31 @@
+.account-form {
+  &__container {
+    display: flex;
+    justify-content: center;
+    margin: 10px;
+    padding: 10px;
+  }
+
+  &__input {
+    margin: 5px;
+    &__container {
+      width: 100%;
+    }
+    &__select {
+      width: 100%;
+      &__option {
+        margin: 10px;
+      }
+    }
+  }
+
+  &__button {
+    &__container {
+      padding-top: 10px;
+      margin: 5px;
+      display: flex;
+      justify-content: space-between;
+    }
+    width: 45%;
+  }
+}
