@@ -7,6 +7,7 @@ import EditGroupNameModal from "../components/EditGroupNameModal";
 import AccountCard from "../components/AccountCard";
 import Header from "../components/Header";
 import {useTranslation} from "react-i18next";
+import {Link} from "react-router-dom";
 
 const Dashboard = () => {
     const [editGroupNameModalVisible, setEditGroupNameModalVisible] = useState(false);
@@ -45,14 +46,22 @@ const Dashboard = () => {
         <div>
             <EditGroupNameModal onSave={onSaveGroupName} onCancel={() => setEditGroupNameModalVisible(false)}
                                 visible={editGroupNameModalVisible}/>
-            <Header title={t("dashboard.title")} actions={<FontAwesomeIcon icon={faPlus} color="white"/>}/>
+            <Header title={t("dashboard.title")} actions={
+                <Link to="/account/create">
+                    <FontAwesomeIcon icon={faPlus} color="white"/>
+                </Link>
+            }/>
             <Collapse
                 defaultActiveKey={[1]}
                 // onChange={callback}
             >
                 <Collapse.Panel key={1} header="Group 1" extra={getButtons()}>
-                    <AccountCard id={1} name="majd" amount={1235} currency="$" lastActivity="my last activity"/>
-                    <AccountCard id={2} name="majd" amount={1235} currency="$" lastActivity="my last activity"/>
+                    <Link to="/account/1">
+                        <AccountCard id={1} name="account 1" amount={235} currency="JOD" lastActivity="my last activity 1"/>
+                    </Link>
+                    <Link to="/account/2">
+                        <AccountCard id={2} name="account 2" amount={1235} currency="$" lastActivity="my last activity 2"/>
+                    </Link>
                 </Collapse.Panel>
                 <Collapse.Panel key={2} header="Group 2" extra={getButtons()}/>
             </Collapse>

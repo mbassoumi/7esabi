@@ -4,8 +4,14 @@ import {Button, Input, Select} from "antd";
 import {useTranslation} from "react-i18next";
 import CURRENCIES from "../api/currency";
 import Header from "../components/Header";
+import {RouteComponentProps} from "react-router-dom";
 
-const AccountForm = () => {
+const AccountForm = ({match}: RouteComponentProps) => {
+
+    //@ts-ignore
+    const id = match.params.id;
+    console.log('selected AccountForm id', id);
+
     const {t} = useTranslation();
 
     const [state, setState] = useState({

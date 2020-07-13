@@ -4,9 +4,20 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faKey, faUser} from '@fortawesome/free-solid-svg-icons'
 import './styles/login.scss'
 import {useTranslation} from "react-i18next";
+import {useDispatch, useSelector} from "react-redux";
+import {loginAction} from "../api/auth/actions/authActions";
+import {Redirect} from 'react-router-dom';
 
 
 const Login = () => {
+
+    const dispatch = useDispatch();
+
+    //@ts-ignore
+    const loggedInUser = useSelector(state => state.auth.user);
+
+    console.log('Login user', loggedInUser);
+
     const [state, setState] = useState({
         username: '',
         password: '',
@@ -21,10 +32,17 @@ const Login = () => {
     }
     const onSubmit = () => {
         alert(JSON.stringify(state))
+        dispatch(loginAction({
+            id: 1,
+            username: state.username
+        }));
     }
 
     return (
         <div className="login-page__container">
+            {
+                loggedInUser ? <Redirect to={{pathname: '/'}}/> : null
+            }
             <div className="login-page__form__container">
                 <div className="login-page__form__logo">
                     {t("logo")}

@@ -6,8 +6,14 @@ import Header from "../components/Header";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faMinusCircle, faPlusCircle} from "@fortawesome/free-solid-svg-icons";
 import moment from 'moment';
+import {RouteComponentProps} from "react-router-dom";
 
-const TransactionForm = () => {
+const TransactionForm = ({match}: RouteComponentProps) => {
+
+    //@ts-ignore
+    const id = match.params.id;
+    console.log('selected TransactionForm id', id);
+
     const {t} = useTranslation();
 
     const [state, setState] = useState({
