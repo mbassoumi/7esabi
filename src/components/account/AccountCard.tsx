@@ -308,16 +308,20 @@ const AccountCard = ({
     </span>
   );
 
-  const balance = (
-    <div
-      className={`account-card__balance${
-        isInFullAccountMode ? '__full-size' : ''
-      }`}
-    >
-      <span>{currencyIcon}</span>
-      {balanceAmount}
-    </div>
-  );
+  const balance = () => {
+    const mainClass = `account-card__balance${
+      isInFullAccountMode ? '__full-size' : ''
+    }`;
+
+    const classNegative =
+      (account?.amount || 0) < 0 ? 'account-card__balance__negative' : '';
+    return (
+      <div className={`${mainClass} ${classNegative}`}>
+        <span>{currencyIcon}</span>
+        {balanceAmount}
+      </div>
+    );
+  };
 
   const addTransactionsButton = (isAccountForCurrentUser ||
     accountPermission?.canEdit) && (
@@ -345,7 +349,7 @@ const AccountCard = ({
       <Link to={`/account/${account.id}`} key={`account_${account.id}_link`}>
         <div className="account-card__container">
           {account.isShared ? accountSharedInfo() : accountNameLine}
-          <div className="account-card__container__line">{balance}</div>
+          <div className="account-card__container__line">{balance()}</div>
           <div className="account-card__container__line">
             <div className="account-card__last-activity">{lastActivity()}</div>
           </div>
@@ -364,7 +368,7 @@ const AccountCard = ({
       <div className="account-card__container__full-size">
         {account.isShared && accountSharedInfo()}
         <div className="account-card__container__line__full-size">
-          {balance}
+          {balance()}
         </div>
         <div className="account-card__container__line__full-size">
           <div className="account-card__last-activity__full-size">
