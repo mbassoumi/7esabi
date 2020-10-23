@@ -8,7 +8,7 @@ import { GQL_TRANSACTIONS_PAGINATED } from '../../graphql/gql/transaction/getPag
 import { GqlTransactionsPaginated } from '../../graphql/gql/transaction/types/GqlTransactionsPaginated';
 import { showGenericOperationFailedMessage } from '../../graphql/utils/errorsHelper';
 import TransactionCard from './TransactionCard';
-import '../styles/transactionsList.scss';
+import './styles/transactionsList.scss';
 
 interface TransactionsListProps {
   account: GqlFragmentAccount;

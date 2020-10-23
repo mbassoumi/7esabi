@@ -1,7 +1,7 @@
 import { Layout, Spin } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import '../styles/loadingPageComponent.scss';
+import './styles/loadingPageComponent.scss';
 
 const LoadingPageComponent = () => {
   const { t } = useTranslation();

@@ -12,7 +12,7 @@ import {
 import { GqlFragmentAccount } from '../../graphql/gql/client-schema/types/GqlFragmentAccount';
 import { TransactionType } from '../../graphql/gql/globalTypes';
 import { useAllUsers, useCurrentUser } from '../helpers/storeHelper';
-import '../styles/accountStatsModal.scss';
+import './styles/accountStatsModal.scss';
 
 interface AccountStatsModalProps {
   account: GqlFragmentAccount;
@@ -41,7 +41,7 @@ const AccountStatsModal = ({ account, onOk }: AccountStatsModalProps) => {
 
   const { loading, error, data } = useQuery<GqlAccountStats>(
     GQL_ACCOUNT_STATS,
-    { variables: { accountId: account.id } }
+    { variables: { accountId: account.id }, fetchPolicy: 'cache-and-network' }
   );
 
   const onOkClick = async (event: any) => {

@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AccountGroupFormModal from './AccountGroupFormModal';
 import AccountGroupsCollapsible from './AccountGroupsCollapsible';
-import '../styles/accountGroupsList.scss';
+import './styles/accountGroupsList.scss';
 
 interface AccountGroupsListModalsState {
   accountGroupFormModalVisible: boolean;

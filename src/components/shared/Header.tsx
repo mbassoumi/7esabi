@@ -2,7 +2,7 @@ import { faHome } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { ReactComponentElement } from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/header.scss';
+import './styles/header.scss';
 
 interface HeaderProps {
   title: string;

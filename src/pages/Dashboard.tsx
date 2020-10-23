@@ -16,7 +16,7 @@ const Dashboard = ({ updateHeaderTitle }: PrivateRouteProps) => {
     updateHeaderTitle(t('dashboard.title'));
     if (queryParams.get('accountDeleted')) {
       message.success(
-        t(`messages.account.deleted`),
+        t(`generic.messages.success`),
         DEFAULT_SUCCESS_MESSAGE_DURATION
       );
     }

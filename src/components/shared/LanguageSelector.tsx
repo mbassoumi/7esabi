@@ -8,7 +8,7 @@ import { GqlUpdateUserProfile } from '../../graphql/gql/user/types/GqlUpdateUser
 import { GQL_UPDATE_USER_PROFILE } from '../../graphql/gql/user/update';
 import { showGenericOperationFailedMessage } from '../../graphql/utils/errorsHelper';
 import { useCurrentUser } from '../helpers/storeHelper';
-import '../styles/languageSelector.scss';
+import './styles/languageSelector.scss';
 
 interface LanguageSelectorProps {
   setLoading?: (loading: boolean) => any;

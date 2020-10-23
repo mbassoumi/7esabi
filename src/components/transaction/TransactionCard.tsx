@@ -18,7 +18,7 @@ import {
 import { useBasicUserInfo, useCurrentUser } from '../helpers/storeHelper';
 import CurrencyIcon from '../shared/Currency';
 import { EntityActionButtons } from '../shared/EntityActionButtons';
-import '../styles/transactionCard.scss';
+import './styles/transactionCard.scss';
 import TransactionFormModal from './TransactionFormModal';
 
 interface TransactionCardProps {
@@ -105,13 +105,13 @@ const TransactionCard = ({
       });
 
       message.success(
-        t(`messages.account.deleted`),
+        t(`generic.messages.success`),
         DEFAULT_SUCCESS_MESSAGE_DURATION
       );
     } catch (error) {
       console.log('error', error);
       message.error(
-        t(`messages.account.deletingFailed`),
+        t(`generic.errors.operationFailed`),
         DEFAULT_ERROR_MESSAGE_DURATION
       );
     }

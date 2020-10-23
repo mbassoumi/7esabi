@@ -15,7 +15,7 @@ import {
   AccountPermissionInput,
   Currency,
 } from '../../graphql/gql/globalTypes';
-import '../styles/accountForm.scss';
+import './styles/accountForm.scss';
 import {
   DEFAULT_ERROR_MESSAGE_DURATION,
   DEFAULT_SUCCESS_MESSAGE_DURATION,
@@ -187,7 +187,7 @@ const AccountFormModal = ({
       });
 
       message.success(
-        t(`messages.account.saved`),
+        t(`generic.messages.success`),
         DEFAULT_SUCCESS_MESSAGE_DURATION
       );
 
@@ -198,7 +198,7 @@ const AccountFormModal = ({
     } catch (error) {
       console.log('error', error);
       message.error(
-        t(`messages.account.savingFailed`),
+        t(`generic.errors.operationFailed`),
         DEFAULT_ERROR_MESSAGE_DURATION
       );
     }
