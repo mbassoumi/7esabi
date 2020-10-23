@@ -10,6 +10,7 @@ export default {
         welcome: 'أهلا بك',
         loadingPleaseWait: 'يرجى الإنتظار...',
         noDataFound: 'لا توجد بيانات',
+        success: 'تمت العملية بنجاح',
       },
       errors: {
         dataIncomplete:

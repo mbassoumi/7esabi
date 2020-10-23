@@ -17,7 +17,7 @@ import { GQL_TRANSACTIONS_PAGINATED } from '../../graphql/gql/transaction/getPag
 import { GqlAddTransaction } from '../../graphql/gql/transaction/types/GqlAddTransaction';
 import { GqlUpdateTransaction } from '../../graphql/gql/transaction/types/GqlUpdateTransaction';
 import { GQL_UPDATE_TRANSACTION } from '../../graphql/gql/transaction/update';
-import '../styles/transactionFormModal.scss';
+import './styles/transactionFormModal.scss';
 import {
   DEFAULT_ERROR_MESSAGE_DURATION,
   DEFAULT_SUCCESS_MESSAGE_DURATION,
@@ -151,7 +151,7 @@ const TransactionFormModal = ({
       });
 
       message.success(
-        t(`messages.transaction.saved`),
+        t(`generic.messages.success`),
         DEFAULT_SUCCESS_MESSAGE_DURATION
       );
 
@@ -162,7 +162,7 @@ const TransactionFormModal = ({
     } catch (error) {
       console.log('error', error);
       message.error(
-        t(`messages.transaction.savingFailed`),
+        t(`generic.errors.operationFailed`),
         DEFAULT_ERROR_MESSAGE_DURATION
       );
     }

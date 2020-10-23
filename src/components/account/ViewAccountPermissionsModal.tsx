@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { GqlFragmentAccount_permissions } from '../../graphql/gql/client-schema/types/GqlFragmentAccount';
 import { AccountPermissionInput } from '../../graphql/gql/globalTypes';
 import { convertToAccountPermissionsInput } from '../../graphql/utils/typeHelpers';
-import '../styles/accountForm.scss';
+import './styles/accountForm.scss';
 import AccountPermissionsForm from './AccountPermissionsForm';
 
 interface ViewAccountPermissionsModalProps {

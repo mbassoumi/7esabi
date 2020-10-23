@@ -2,7 +2,7 @@ import { faPencilAlt, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Tooltip } from 'antd';
 import React from 'react';
-import '../styles/entityActionButtons.scss';
+import './styles/entityActionButtons.scss';
 import { useTranslation } from 'react-i18next';
 import { GQL_FRAGMENT_ACCOUNT_GROUP } from '../../graphql/gql/client-schema/fragments';
 

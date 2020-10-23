@@ -73,7 +73,7 @@ const AccountGroupFormModal = ({
       });
 
       message.success(
-        t(`messages.accountGroup.saved`),
+        t(`generic.messages.success`),
         DEFAULT_SUCCESS_MESSAGE_DURATION
       );
 
@@ -84,7 +84,7 @@ const AccountGroupFormModal = ({
     } catch (error) {
       console.log('error', error);
       message.error(
-        t(`messages.accountGroup.savingFailed`),
+        t(`generic.errors.operationFailed`),
         DEFAULT_ERROR_MESSAGE_DURATION
       );
     }

@@ -39,7 +39,7 @@ const DeleteGroupModal = ({
       });
 
       message.success(
-        t(`messages.accountGroup.deleted`),
+        t(`generic.messages.success`),
         DEFAULT_SUCCESS_MESSAGE_DURATION
       );
 
@@ -47,7 +47,7 @@ const DeleteGroupModal = ({
     } catch (error) {
       console.log('error', error);
       message.error(
-        t(`messages.account.deletingFailed`),
+        t(`generic.errors.operationFailed`),
         DEFAULT_ERROR_MESSAGE_DURATION
       );
     }

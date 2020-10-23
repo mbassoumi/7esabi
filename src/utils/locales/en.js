@@ -10,6 +10,7 @@ export default {
         welcome: 'Welcome',
         loadingPleaseWait: 'Loading...',
         noDataFound: 'No data available',
+        success: 'Operation was successful',
       },
       errors: {
         dataIncomplete:

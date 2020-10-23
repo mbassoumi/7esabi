@@ -11,7 +11,7 @@ import { useCurrentUser } from '../helpers/storeHelper';
 import { EntityActionButtons } from '../shared/EntityActionButtons';
 import AccountGroupFormModal from './AccountGroupFormModal';
 import DeleteGroupModal from './DeleteGroupModal';
-import '../styles/accountGroupsCollapsible.scss';
+import './styles/accountGroupsCollapsible.scss';
 
 interface AccountGroupsCollapsibleProps {}
 

@@ -20,7 +20,7 @@ import {
 } from '../helpers/storeHelper';
 import CurrencyIcon from '../shared/Currency';
 import { EntityActionButtons } from '../shared/EntityActionButtons';
-import '../styles/accountCard.scss';
+import './styles/accountCard.scss';
 import TransactionFormModal from '../transaction/TransactionFormModal';
 import AccountFormModal from './AccountFormModal';
 import AccountStatsModal from './AccountStatsModal';
