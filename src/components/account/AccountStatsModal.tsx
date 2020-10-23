@@ -73,32 +73,6 @@ const AccountStatsModal = ({ account, onOk }: AccountStatsModalProps) => {
       color: COLORS[index % COLORS.length],
     }));
 
-    data.push({
-      title: `hegaaad`,
-      value: 123,
-      color: COLORS[2],
-    });
-
-    data.push({
-      title: `hegaaad`,
-      value: 233,
-      color: COLORS[3],
-    });
-
-    data.push({
-      title: `hegaaad`,
-      value: 555,
-      color: COLORS[4],
-    });
-
-    data.push({
-      title: `hegaaad`,
-      value: 32,
-      color: COLORS[5],
-    });
-
-    console.log('dataaaa', data);
-
     return (
       <div className="account-stats-modal__chart">
         <PieChart

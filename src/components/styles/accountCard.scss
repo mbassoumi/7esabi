@@ -104,6 +104,10 @@
         &__amount {
             padding: 10px;
         }
+
+        &__negative {
+            color: red;
+        }
     }
 
     &__last-activity {
