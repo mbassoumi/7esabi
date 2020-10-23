@@ -1,0 +1,21 @@
+.account-stats-modal {
+  display: flex;
+  flex-direction: column;
+
+  &__chart {
+    width: 100%;
+    padding: 0px;
+    height: 150px;
+    direction: ltr;
+  }
+
+  &__details-list {
+    margin: 15px 0px 0px 0px;
+    padding: 0px;
+    direction: ltr;
+  }
+
+  &__loading {
+    margin: 0px auto;
+  }
+}

@@ -1,0 +1,10 @@
+.entity-action-buttons {
+  padding: 0px;
+  cursor: pointer;
+
+  &__button {
+    padding: 0px 10px;
+    margin: 0 3px;
+    border-radius: 5px;
+  }
+}
