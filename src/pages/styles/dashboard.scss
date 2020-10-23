@@ -1,6 +1,9 @@
 .dashboard-page {
-  &__icon-buttons {
-    margin: 0 5px;
-    cursor: pointer;
+  &__container {
+    flex-direction: column;
+    justify-content: center;
+    padding: 1px 20px;
+    background-color: white;
+    height: 100vh;
   }
 }

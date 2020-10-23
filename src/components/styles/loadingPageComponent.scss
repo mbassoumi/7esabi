@@ -1,0 +1,26 @@
+.loading-page {
+  margin: 0px auto;
+  max-width: 800px;
+  min-width: 300px;
+
+  &__header {
+    background: #0c3069;
+    height: 45px;
+  }
+
+  &__content {
+    text-align: center;
+    margin: 20px auto;
+
+    &__text {
+      margin-top: 100px;
+      margin-bottom: 50px;
+      text-align: center;
+      font-size: 45px;
+      color: black;
+    }
+
+    &__spinner {
+    }
+  }
+}

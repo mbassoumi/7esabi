@@ -1,35 +1,73 @@
-import React from "react";
-import Header from "../components/Header";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faPencilAlt} from "@fortawesome/free-solid-svg-icons";
-import './styles/account.scss'
-import AccountCard from "../components/AccountCard";
-import TransactionCard from "../components/TransactionCard";
-import CURRENCIES from "../api/currency";
-import {Link, RouteComponentProps} from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router';
+import AccountCard from '../components/account/AccountCard';
+import {
+  useAccount,
+  useAccountGroup,
+  useCurrentUser,
+} from '../components/helpers/storeHelper';
+import TransactionsList from '../components/transaction/TransactionsList';
+import NotFound from './public/NotFound';
+import { PrivateRouteProps } from './routes/PrivateRoute';
+import './styles/account.scss';
 
-
-const Account = ({match}: RouteComponentProps) => {
-    //@ts-ignore
-    const id = match.params.id;
-    console.log('selected Account id', id);
-
-    return (
-        <div>
-            <Header title="My Account" actions={
-                <Link to="/account/1/edit">
-                    <FontAwesomeIcon icon={faPencilAlt}/>
-                </Link>
-            }/>
-            <div className="account-page__container">
-                <div className="account-page__account-card-container">
-                    <AccountCard id={1} name="My Account" amount={1234} currency="$" lastActivity="withdraw 10K"/>
-                </div>
-                <TransactionCard id={1} date={new Date()} description="dinner" type={true} amount={120} currency={CURRENCIES[0]}/>
-                <TransactionCard id={2} date={new Date()} description="gamegamegam egame game gamegame gamega mega megam egamega megamegame" type={false} amount={90} currency={CURRENCIES[0]}/>
-            </div>
-        </div>
-    )
+interface AccountPageState {
+  initialTransactionsListPage: number;
 }
+const Account = ({ updateHeaderTitle }: PrivateRouteProps) => {
+  //@ts-ignore
+  const { id } = useParams();
+
+  const currentUser = useCurrentUser();
+  const account = useAccount(id);
+  const accountGroup = useAccountGroup(account?.accountGroup?.id || null);
+
+  useEffect(() => {
+    if (account) {
+      if (accountGroup?.name) {
+        updateHeaderTitle(`${accountGroup.name} - ${account.name}`);
+      } else {
+        updateHeaderTitle(account.name);
+      }
+    }
+  }, [account, accountGroup]);
+
+  console.log('acccountttttttt', account, accountGroup, currentUser);
+
+  const [state, setState] = useState({
+    initialTransactionsListPage: 1,
+  } as AccountPageState);
+
+  const resetTransactionsList = () => {
+    // 2 state updates to force the useEffect in TransactionsList to re-render,
+    // otherwise the initial would always be 1 and won't force a rerender.
+    setState((state) => ({ ...state, initialTransactionsListPage: 0 }));
+    setState((state) => ({
+      ...state,
+      initialTransactionsListPage: 1,
+    }));
+  };
+
+  const accountPageContent = () => (
+    <div className="account-page__container">
+      <div className="account-page__account-card">
+        <AccountCard
+          account={account!}
+          accountGroup={accountGroup}
+          isInFullAccountMode
+          resetTransactionsList={resetTransactionsList}
+        />
+      </div>
+      <div className="account-page__transactions-list">
+        <TransactionsList
+          account={account!}
+          initialTransactionsListPage={state.initialTransactionsListPage}
+        />
+      </div>
+    </div>
+  );
+
+  return account ? accountPageContent() : <NotFound />;
+};
 
 export default Account;
