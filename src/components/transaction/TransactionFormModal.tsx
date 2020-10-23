@@ -133,11 +133,13 @@ const TransactionFormModal = ({
     date: Moment | null,
     dateString: string | null
   ) => {
-    const dateValue = date?.unix() || new Date().getTime();
-    console.log('llll', dateValue);
+    const dateValue = isEmpty(dateString) ? new Date() : new Date(dateString!);
     setState({
       ...state,
-      transactionInput: { ...state.transactionInput, date: dateValue },
+      transactionInput: {
+        ...state.transactionInput,
+        date: dateValue.getTime(),
+      },
     });
   };
 
