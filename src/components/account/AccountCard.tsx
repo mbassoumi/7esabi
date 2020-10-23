@@ -52,7 +52,7 @@ const AccountCard = ({
   const currentUser = useCurrentUser()!;
   const accountUser = useBasicUserInfo(account.accountGroup.user.id)!;
   const lastTransactionUser = useBasicUserInfo(
-    get(account, 'lastTransactions[0].user', null)
+    get(account, 'lastTransaction[0].user', null)
   );
   const isAccountForCurrentUser = currentUser.id === accountUser.id;
   const accountPermission = useAccountPermission(account.id);

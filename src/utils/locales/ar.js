@@ -83,7 +83,7 @@ export default {
         },
         selectGroupName: 'إختر المجموعة التي تريد اضافة الحساب اليها',
         selectCurrency: 'إختر العملة',
-        inputAccountName: 'أدخل اسم المجموعة',
+        inputAccountName: 'أدخل اسم الحساب',
         permissionsSectionHeader: 'إعدادات المشاركة',
       },
       deleteForm: {
