@@ -258,7 +258,7 @@ const TransactionFormModal = ({
             <DatePicker
               allowClear={false}
               className="transaction-form__input__date"
-              defaultValue={moment(state.transactionInput.date) || moment()}
+              defaultValue={moment.utc(state.transactionInput.date) || moment()}
               format="YYYY/MM/DD"
               name={'date'}
               placeholder={t('transaction.form.selectDate')}
