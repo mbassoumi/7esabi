@@ -17,6 +17,7 @@ export interface GqlUpdateTransaction_updateTransaction_accountGroup_user {
 export interface GqlUpdateTransaction_updateTransaction_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlUpdateTransaction_updateTransaction_accountGroup_user;
 }
 

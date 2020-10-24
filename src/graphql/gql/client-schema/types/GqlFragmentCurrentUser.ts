@@ -25,6 +25,7 @@ export interface GqlFragmentCurrentUser_accountGroups_accounts_accountGroup_user
 export interface GqlFragmentCurrentUser_accountGroups_accounts_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlFragmentCurrentUser_accountGroups_accounts_accountGroup_user;
 }
 
@@ -84,6 +85,7 @@ export interface GqlFragmentCurrentUser_accountPermissions_account_accountGroup_
 export interface GqlFragmentCurrentUser_accountPermissions_account_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlFragmentCurrentUser_accountPermissions_account_accountGroup_user;
 }
 

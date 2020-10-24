@@ -2,6 +2,7 @@ import { useMutation } from '@apollo/client';
 import { faMinusCircle, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DatePicker, Input, message, Modal, Space, Switch } from 'antd';
+import { format } from 'date-and-time';
 import { isEmpty } from 'lodash';
 import moment, { Moment } from 'moment';
 import React, { ChangeEvent, useState } from 'react';
@@ -19,6 +20,7 @@ import { GqlUpdateTransaction } from '../../graphql/gql/transaction/types/GqlUpd
 import { GQL_UPDATE_TRANSACTION } from '../../graphql/gql/transaction/update';
 import './styles/transactionFormModal.scss';
 import {
+  DEFAULT_DATE_FORMAT,
   DEFAULT_ERROR_MESSAGE_DURATION,
   DEFAULT_SUCCESS_MESSAGE_DURATION,
 } from '../../utils/appVars';
@@ -134,6 +136,7 @@ const TransactionFormModal = ({
     dateString: string | null
   ) => {
     const dateValue = isEmpty(dateString) ? new Date() : new Date(dateString!);
+    console.log(dateValue, dateString, dateValue.getTime());
     setState({
       ...state,
       transactionInput: {
@@ -204,6 +207,7 @@ const TransactionFormModal = ({
   return (
     <Modal
       visible={true}
+      maskClosable={false}
       title={
         updateMode
           ? t('transaction.form.title.edit')
@@ -254,7 +258,7 @@ const TransactionFormModal = ({
             <DatePicker
               allowClear={false}
               className="transaction-form__input__date"
-              defaultValue={moment()}
+              defaultValue={moment(state.transactionInput.date) || moment()}
               format="YYYY/MM/DD"
               name={'date'}
               placeholder={t('transaction.form.selectDate')}

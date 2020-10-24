@@ -17,6 +17,7 @@ export interface GqlDeleteTransaction_deleteTransaction_accountGroup_user {
 export interface GqlDeleteTransaction_deleteTransaction_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlDeleteTransaction_deleteTransaction_accountGroup_user;
 }
 

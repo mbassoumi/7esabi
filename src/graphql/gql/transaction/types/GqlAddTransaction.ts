@@ -17,6 +17,7 @@ export interface GqlAddTransaction_addTransaction_accountGroup_user {
 export interface GqlAddTransaction_addTransaction_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlAddTransaction_addTransaction_accountGroup_user;
 }
 

@@ -6,12 +6,13 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Alert, Button, Select, Switch, Table } from 'antd';
-import { filter, find, isEmpty, drop } from 'lodash';
+import { drop, filter, find } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GqlFragmentBasicUserInfo } from '../../graphql/gql/client-schema/types/GqlFragmentBasicUserInfo';
 import { AccountPermissionInput } from '../../graphql/gql/globalTypes';
 import { useAllUsers, useCurrentUser } from '../helpers/storeHelper';
+import AllUsersSelector from '../shared/allUsersSelector';
 
 interface AccountPermissionsFormProps {
   accountPermissions: AccountPermissionInput[];
@@ -152,10 +153,8 @@ const AccountPermissionsForm = ({
     return find(allUsers, { id: userId })?.fullName || `unknown user ${userId}`;
   };
 
-  const onPossibleUserSelected = (userId: string) => {
-    if (isEmpty(userId)) return;
-
-    updateAccountPermission!(userId, { userId: userId, canEdit: false });
+  const onPossibleUserSelected = (user: GqlFragmentBasicUserInfo) => {
+    updateAccountPermission!(user.id, { userId: user.id, canEdit: false });
   };
 
   console.log('rendeeeer');
@@ -184,21 +183,14 @@ const AccountPermissionsForm = ({
         style={{ marginBottom: '5px' }}
       />
       {editMode && (
-        <Select
-          showSearch
-          allowClear
-          size="middle"
-          className="account-form__input__select"
+        <AllUsersSelector
+          possibleUsers={state.possibleUsers}
+          onUserSelected={onPossibleUserSelected}
           placeholder={t('accountPermission.form.selectUser')}
-          onSelect={onPossibleUserSelected}
-          defaultActiveFirstOption={false}
-          filterOption={(input, option) =>
-            option?.children?.toLowerCase().indexOf(input) > 0
-          }
-        >
-          {selectOptions()}
-        </Select>
+          selectSize="middle"
+        />
       )}
+
       <Table
         columns={state.columnDefs}
         dataSource={state.dataSource}

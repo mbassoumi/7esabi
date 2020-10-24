@@ -25,6 +25,7 @@ export interface GqlUpdateAccount_updateAccount_accountGroups_accounts_accountGr
 export interface GqlUpdateAccount_updateAccount_accountGroups_accounts_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlUpdateAccount_updateAccount_accountGroups_accounts_accountGroup_user;
 }
 
@@ -84,6 +85,7 @@ export interface GqlUpdateAccount_updateAccount_accountPermissions_account_accou
 export interface GqlUpdateAccount_updateAccount_accountPermissions_account_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlUpdateAccount_updateAccount_accountPermissions_account_accountGroup_user;
 }
 

@@ -25,6 +25,7 @@ export interface GqlDeleteAccountGroup_deleteAccountGroup_accountGroups_accounts
 export interface GqlDeleteAccountGroup_deleteAccountGroup_accountGroups_accounts_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlDeleteAccountGroup_deleteAccountGroup_accountGroups_accounts_accountGroup_user;
 }
 
@@ -84,6 +85,7 @@ export interface GqlDeleteAccountGroup_deleteAccountGroup_accountPermissions_acc
 export interface GqlDeleteAccountGroup_deleteAccountGroup_accountPermissions_account_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlDeleteAccountGroup_deleteAccountGroup_accountPermissions_account_accountGroup_user;
 }
 

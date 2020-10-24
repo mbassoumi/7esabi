@@ -263,6 +263,7 @@ const AccountFormModal = ({
   return (
     <Modal
       visible={true}
+      maskClosable={false}
       className={'rtl'}
       title={
         updateMode

@@ -17,6 +17,7 @@ export interface GqlFragmentAccountGroup_accounts_accountGroup_user {
 export interface GqlFragmentAccountGroup_accounts_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlFragmentAccountGroup_accounts_accountGroup_user;
 }
 

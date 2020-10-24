@@ -103,6 +103,7 @@ const AccountGroupFormModal = ({
   return (
     <Modal
       visible={true}
+      maskClosable={false}
       title={
         updateMode
           ? t('accountGroup.form.title.edit')

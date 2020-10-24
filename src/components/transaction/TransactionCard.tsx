@@ -3,6 +3,7 @@ import { useMutation } from '@apollo/client';
 import { faMinusCircle, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { message, Modal } from 'antd';
+import { format } from 'date-and-time';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GqlFragmentAccount } from '../../graphql/gql/client-schema/types/GqlFragmentAccount';
@@ -12,10 +13,15 @@ import { GQL_DELETE_TRANSACTION } from '../../graphql/gql/transaction/delete';
 import { GQL_TRANSACTIONS_PAGINATED } from '../../graphql/gql/transaction/getPaginated';
 import { GqlDeleteTransaction } from '../../graphql/gql/transaction/types/GqlDeleteTransaction';
 import {
+  DEFAULT_DATE_FORMAT,
   DEFAULT_ERROR_MESSAGE_DURATION,
   DEFAULT_SUCCESS_MESSAGE_DURATION,
 } from '../../utils/appVars';
-import { useBasicUserInfo, useCurrentUser } from '../helpers/storeHelper';
+import {
+  useAccountPermission,
+  useBasicUserInfo,
+  useCurrentUser,
+} from '../helpers/storeHelper';
 import CurrencyIcon from '../shared/Currency';
 import { EntityActionButtons } from '../shared/EntityActionButtons';
 import './styles/transactionCard.scss';
@@ -42,7 +48,10 @@ const TransactionCard = ({
   const { t, i18n } = useTranslation();
   const currentUser = useCurrentUser()!;
   const transactionUser = useBasicUserInfo(transaction.user.id)!;
+  const accountUser = useBasicUserInfo(account.accountGroup.user.id)!;
   const isTransactionForCurrentUser = currentUser.id === transaction.user.id;
+  const accountPermission = useAccountPermission(account.id);
+  const isAccountForCurrentUser = currentUser.id === accountUser.id;
 
   const [deleteTransactionFn] = useMutation<GqlDeleteTransaction>(
     GQL_DELETE_TRANSACTION,
@@ -133,23 +142,33 @@ const TransactionCard = ({
   /*
    * Action buttons
    */
-  const transactionActionButtons = isTransactionForCurrentUser ? (
-    <EntityActionButtons
-      ownerEntity={transaction}
-      translationIndex="transaction"
-      onEditButton={openTransactionFormModal}
-      onDeleteButton={openDeleteTransactionModal}
-    />
-  ) : (
-    <></>
-  );
+  const transactionActionButtons = () => {
+    if (
+      !isTransactionForCurrentUser ||
+      (!isAccountForCurrentUser && !accountPermission?.canEdit)
+    )
+      return <></>;
+
+    return (
+      <EntityActionButtons
+        ownerEntity={transaction}
+        translationIndex="transaction"
+        onEditButton={openTransactionFormModal}
+        onDeleteButton={openDeleteTransactionModal}
+      />
+    );
+  };
 
   /*
    * UI parts
    */
 
   const dateInfoLine = () => {
-    const dateString = new Date(transaction.date).toLocaleDateString();
+    const dateString = format(
+      new Date(transaction.date),
+      DEFAULT_DATE_FORMAT,
+      true
+    );
     if (account.isShared) {
       const userName = isTransactionForCurrentUser
         ? t('user.you')
@@ -182,7 +201,7 @@ const TransactionCard = ({
         <div
           className={`account-card__entity-control-buttons ${entityControlButtonsRtlClass}`}
         >
-          {transactionActionButtons}
+          {transactionActionButtons()}
         </div>
 
         <div className="transaction-card__line">

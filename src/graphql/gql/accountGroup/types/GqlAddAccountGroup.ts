@@ -25,6 +25,7 @@ export interface GqlAddAccountGroup_addAccountGroup_accountGroups_accounts_accou
 export interface GqlAddAccountGroup_addAccountGroup_accountGroups_accounts_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlAddAccountGroup_addAccountGroup_accountGroups_accounts_accountGroup_user;
 }
 
@@ -84,6 +85,7 @@ export interface GqlAddAccountGroup_addAccountGroup_accountPermissions_account_a
 export interface GqlAddAccountGroup_addAccountGroup_accountPermissions_account_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlAddAccountGroup_addAccountGroup_accountPermissions_account_accountGroup_user;
 }
 

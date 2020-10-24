@@ -25,6 +25,7 @@ export interface GqlSessionDataQuery_sessionData_user_accountGroups_accounts_acc
 export interface GqlSessionDataQuery_sessionData_user_accountGroups_accounts_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlSessionDataQuery_sessionData_user_accountGroups_accounts_accountGroup_user;
 }
 
@@ -84,6 +85,7 @@ export interface GqlSessionDataQuery_sessionData_user_accountPermissions_account
 export interface GqlSessionDataQuery_sessionData_user_accountPermissions_account_accountGroup {
   __typename: "AccountGroup";
   id: string;
+  name: string;
   user: GqlSessionDataQuery_sessionData_user_accountPermissions_account_accountGroup_user;
 }
 

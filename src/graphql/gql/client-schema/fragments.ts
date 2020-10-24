@@ -26,6 +26,7 @@ export const GQL_FRAGMENT_ACCOUNT = gql`
     isShared @client
     accountGroup {
       id
+      name
       user {
         id
       }

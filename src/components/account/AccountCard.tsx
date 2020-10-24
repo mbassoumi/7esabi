@@ -6,6 +6,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Tooltip } from 'antd';
+import { format } from 'date-and-time';
 import { get, isEmpty } from 'lodash';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { GqlFragmentAccount } from '../../graphql/gql/client-schema/types/GqlFragmentAccount';
 import { GqlFragmentAccountGroup } from '../../graphql/gql/client-schema/types/GqlFragmentAccountGroup';
 import { TransactionType } from '../../graphql/gql/globalTypes';
+import { DEFAULT_DATE_FORMAT } from '../../utils/appVars';
 import {
   useAccountPermission,
   useBasicUserInfo,
@@ -20,11 +22,11 @@ import {
 } from '../helpers/storeHelper';
 import CurrencyIcon from '../shared/Currency';
 import { EntityActionButtons } from '../shared/EntityActionButtons';
-import './styles/accountCard.scss';
 import TransactionFormModal from '../transaction/TransactionFormModal';
 import AccountFormModal from './AccountFormModal';
 import AccountStatsModal from './AccountStatsModal';
 import DeleteAccountModal from './DeleteAccountModal';
+import './styles/accountCard.scss';
 import ViewAccountPermissionsModal from './ViewAccountPermissionsModal';
 
 interface AccountCardProps {
@@ -52,7 +54,7 @@ const AccountCard = ({
   const currentUser = useCurrentUser()!;
   const accountUser = useBasicUserInfo(account.accountGroup.user.id)!;
   const lastTransactionUser = useBasicUserInfo(
-    get(account, 'lastTransaction[0].user', null)
+    get(account, 'lastTransaction.user.id', null)
   );
   const isAccountForCurrentUser = currentUser.id === accountUser.id;
   const accountPermission = useAccountPermission(account.id);
@@ -261,7 +263,11 @@ const AccountCard = ({
 
     const amount = lastTransaction.amount;
     const currencyName = t(`account.currency.${account.currency}`);
-    const date = new Date(lastTransaction.date).toLocaleDateString();
+    const date = format(
+      new Date(lastTransaction.date),
+      DEFAULT_DATE_FORMAT,
+      true
+    );
 
     return (
       <>
@@ -276,7 +282,15 @@ const AccountCard = ({
     const ownerName = isAccountForCurrentUser
       ? t('user.you')
       : accountUser.fullName;
+
     const ownerText = `${t('account.card.owner')}: ${ownerName}`;
+
+    let ownerTextPart = '';
+    if (isInFullAccountMode) {
+      ownerTextPart = ownerText;
+    } else if (!isAccountForCurrentUser) {
+      ownerTextPart = `, ${ownerText}`;
+    }
 
     if (isInFullAccountMode) {
       return (
@@ -286,7 +300,7 @@ const AccountCard = ({
               <FontAwesomeIcon icon={faUsers} />
             </span>
             <div className="account-card__shared-icon-info__owner__full-size">
-              {ownerText}
+              {ownerTextPart}
             </div>
           </div>
         </div>
@@ -299,7 +313,7 @@ const AccountCard = ({
               <FontAwesomeIcon icon={faUsers} />
             </span>
             <div className="account-card__shared-icon-info__owner">
-              {`${account.name}, ${ownerText}`}
+              {`${accountFullName()} ${ownerTextPart}`}
             </div>
           </div>
         </div>
@@ -307,8 +321,15 @@ const AccountCard = ({
     }
   };
 
+  const accountFullName = () => {
+    if (!isAccountForCurrentUser) {
+      return `${account.accountGroup.name} - ${account.name}`;
+    }
+    return `${account.name}`;
+  };
+
   const accountNameLine = (
-    <div className="account-card__title">{account.name}</div>
+    <div className="account-card__title">{accountFullName()}</div>
   );
 
   const balanceAmount = (
