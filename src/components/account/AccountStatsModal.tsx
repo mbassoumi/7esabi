@@ -41,7 +41,7 @@ const AccountStatsModal = ({ account, onOk }: AccountStatsModalProps) => {
 
   const { loading, error, data } = useQuery<GqlAccountStats>(
     GQL_ACCOUNT_STATS,
-    { variables: { accountId: account.id }, fetchPolicy: 'cache-and-network' }
+    { variables: { accountId: account.id } }
   );
 
   const onOkClick = async (event: any) => {

@@ -72,6 +72,7 @@ const LanguageSelector = ({ setLoading }: LanguageSelectorProps) => {
     );
   }
 
+  console.log('i18n', i18n.language);
   return (
     <Select
       value={getCodeForLocale(i18n.language || 'en')}
