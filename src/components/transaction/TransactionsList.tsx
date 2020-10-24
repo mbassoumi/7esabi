@@ -37,7 +37,7 @@ const TransactionsList = ({
       accountId: account!.id,
       take: DEFAULT_PAGE_SIZE,
     },
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-and-network',
     notifyOnNetworkStatusChange: true,
     nextFetchPolicy: 'cache-first',
   });
