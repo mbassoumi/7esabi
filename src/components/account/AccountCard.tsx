@@ -194,7 +194,7 @@ const AccountCard = ({
       arrowPointAtCenter
     >
       <Button
-        className="account-card__view-permissions-button"
+        className="entity-action-buttons__button"
         onClick={showViewAccountPermissionsModal}
       >
         <FontAwesomeIcon icon={faAddressBook} color="blue" />
@@ -209,7 +209,7 @@ const AccountCard = ({
       arrowPointAtCenter
     >
       <Button
-        className="account-card__view-stats-button"
+        className="entity-action-buttons__button"
         onClick={showViewStatsModal}
       >
         <FontAwesomeIcon icon={faChartPie} color="crimson" />
@@ -217,19 +217,28 @@ const AccountCard = ({
     </Tooltip>
   );
 
-  const accountActionButtons = isAccountForCurrentUser ? (
-    <EntityActionButtons
-      ownerEntity={account}
-      translationIndex="account"
-      onEditButton={openAccountFormModal}
-      onDeleteButton={openDeleteAccountModal}
-    />
-  ) : (
-    <div>
-      {!isEmpty(account.lastTransaction) && viewStatsButton}
-      {viewAccountPermissionsButton}
-    </div>
-  );
+  const accountActionButtons = () => {
+    const onEditButton = isAccountForCurrentUser ? openAccountFormModal : null;
+    const onDeleteButton = isAccountForCurrentUser
+      ? openDeleteAccountModal
+      : null;
+    const extraButtons = account.isShared && (
+      <>
+        {!isEmpty(account.lastTransaction) && viewStatsButton}
+        {!isAccountForCurrentUser && viewAccountPermissionsButton}
+      </>
+    );
+
+    return (
+      <EntityActionButtons
+        ownerEntity={account}
+        translationIndex="account"
+        onEditButton={onEditButton}
+        onDeleteButton={onDeleteButton}
+        extraButtons={extraButtons}
+      />
+    );
+  };
 
   /*
    * UI parts
@@ -344,7 +353,7 @@ const AccountCard = ({
       <div
         className={`account-card__entity-control-buttons ${entityControlButtonsRtlClass}`}
       >
-        {accountActionButtons}
+        {accountActionButtons()}
       </div>
       <Link to={`/account/${account.id}`} key={`account_${account.id}_link`}>
         <div className="account-card__container">
@@ -363,7 +372,7 @@ const AccountCard = ({
       <div
         className={`account-card__entity-control-buttons__full-size ${entityControlButtonsRtlClass}`}
       >
-        {accountActionButtons}
+        {accountActionButtons()}
       </div>
       <div className="account-card__container__full-size">
         {account.isShared && accountSharedInfo()}
