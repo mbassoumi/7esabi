@@ -2,15 +2,15 @@ import { faPencilAlt, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Tooltip } from 'antd';
 import React from 'react';
-import './styles/entityActionButtons.scss';
 import { useTranslation } from 'react-i18next';
-import { GQL_FRAGMENT_ACCOUNT_GROUP } from '../../graphql/gql/client-schema/fragments';
+import './styles/entityActionButtons.scss';
 
 interface EntityActionButtonsProps<T> {
   ownerEntity: T;
   translationIndex: string;
   onEditButton?: ((entity: T) => any) | null;
   onDeleteButton?: ((entity: T) => any) | null;
+  extraButtons?: any;
 }
 
 export const EntityActionButtons = <T,>({
@@ -18,6 +18,7 @@ export const EntityActionButtons = <T,>({
   translationIndex,
   onEditButton,
   onDeleteButton,
+  extraButtons,
 }: EntityActionButtonsProps<T>) => {
   const { t } = useTranslation();
 
@@ -36,6 +37,7 @@ export const EntityActionButtons = <T,>({
       className="entity-action-buttons"
       onClick={(event) => event.stopPropagation()}
     >
+      {extraButtons && extraButtons}
       {onEditButton && (
         <Tooltip
           placement="topLeft"
