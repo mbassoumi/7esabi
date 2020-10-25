@@ -105,7 +105,10 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
             `https://free.currconv.com/api/v7/convert?q=${queryParam}&compact=ultra&apiKey=315c78b4ac4bec821a28`
           )
           .then((res) => {
-            const convertedAmount = (res.data && res.data[queryParam]) || -1;
+            const conversionRatio = res.data && res.data[queryParam];
+            const convertedAmount = conversionRatio
+              ? account.amount! * conversionRatio
+              : -1;
             updateSelectedAccountAmount(account, destCurrency, convertedAmount);
           });
       }
@@ -217,7 +220,7 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
     for (let account of state.selectedAccounts! || []) {
       const convertedAmount = getConvertedAmount(account) || account.amount;
       if (convertedAmount >= 0) {
-        totalCreditAmounts = totalCreditAmounts + account.amount!;
+        totalCreditAmounts = totalCreditAmounts + convertedAmount;
         creditAccounts.push(account);
       } else {
         debitAccounts.push(account);
@@ -236,7 +239,8 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
     let index = 0;
     const significantAmountThreshold = totalCreditAmounts * 0.03;
     for (let account of creditAccounts) {
-      if (account.amount! >= significantAmountThreshold) {
+      const convertedAmount = getConvertedAmount(account) || account.amount;
+      if (convertedAmount! >= significantAmountThreshold) {
         chartData.push({
           title: account.fullName,
           value: account.amount,
