@@ -9,6 +9,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.13.1",
     "@fortawesome/react-fontawesome": "^0.1.11",
     "antd": "^4.7.0",
+    "axios": "^0.21.0",
     "date-and-time": "^0.14.1",
     "graphql": "^15.3.0",
     "i18next": "^19.5.4",

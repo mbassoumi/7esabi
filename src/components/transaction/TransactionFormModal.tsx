@@ -227,7 +227,7 @@ const TransactionFormModal = ({
         />
       }
     >
-      <div className="transaction-form__container">
+      <div className="transaction-form__container" id="transaction_modal">
         <div className="transaction-form__input__container">
           <div className="transaction-form__input">
             <Space>
@@ -263,6 +263,9 @@ const TransactionFormModal = ({
               name={'date'}
               placeholder={t('transaction.form.selectDate')}
               onChange={onTransactionDateChange}
+              getPopupContainer={() =>
+                document.getElementById('transaction_modal') as any
+              }
             />
           </div>
         </div>

@@ -78,6 +78,7 @@ const LanguageSelector = ({ setLoading }: LanguageSelectorProps) => {
       value={getCodeForLocale(i18n.language || 'en')}
       className="language-selector"
       onChange={onChange}
+      getPopupContainer={() => document.getElementById('root') as any}
     >
       <Select.Option value={LocaleCode.EN}>English</Select.Option>
       <Select.Option value={LocaleCode.AR}>Arabic</Select.Option>
