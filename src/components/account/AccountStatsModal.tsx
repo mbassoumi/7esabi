@@ -243,12 +243,12 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
       if (convertedAmount! >= significantAmountThreshold) {
         chartData.push({
           title: account.fullName,
-          value: account.amount,
+          value: convertedAmount,
           color: COLORS[index % COLORS.length],
         });
         index = index + 1;
       } else {
-        insignificantAmounts = insignificantAmounts + account.amount!;
+        insignificantAmounts = insignificantAmounts + convertedAmount;
       }
     }
 
