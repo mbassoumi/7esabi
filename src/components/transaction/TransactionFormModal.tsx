@@ -2,7 +2,6 @@ import { useMutation } from '@apollo/client';
 import { faMinusCircle, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DatePicker, Input, message, Modal, Space, Switch } from 'antd';
-import { format } from 'date-and-time';
 import { isEmpty } from 'lodash';
 import moment, { Moment } from 'moment';
 import React, { ChangeEvent, useState } from 'react';
@@ -18,13 +17,12 @@ import { GQL_TRANSACTIONS_PAGINATED } from '../../graphql/gql/transaction/getPag
 import { GqlAddTransaction } from '../../graphql/gql/transaction/types/GqlAddTransaction';
 import { GqlUpdateTransaction } from '../../graphql/gql/transaction/types/GqlUpdateTransaction';
 import { GQL_UPDATE_TRANSACTION } from '../../graphql/gql/transaction/update';
-import './styles/transactionFormModal.scss';
 import {
-  DEFAULT_DATE_FORMAT,
   DEFAULT_ERROR_MESSAGE_DURATION,
   DEFAULT_SUCCESS_MESSAGE_DURATION,
 } from '../../utils/appVars';
 import FormModalFooter from '../shared/FormModalFooter';
+import './styles/transactionFormModal.scss';
 
 interface TransactionFormModalProps {
   onSave: (mutationInfo: any) => any;
@@ -135,7 +133,9 @@ const TransactionFormModal = ({
     date: Moment | null,
     dateString: string | null
   ) => {
-    const dateValue = isEmpty(dateString) ? new Date() : new Date(dateString!);
+    const dateValue = isEmpty(dateString)
+      ? new Date()
+      : new Date(Date.parse(dateString!));
     console.log(dateValue, dateString, dateValue.getTime());
     setState({
       ...state,
@@ -258,7 +258,7 @@ const TransactionFormModal = ({
             <DatePicker
               allowClear={false}
               className="transaction-form__input__date"
-              defaultValue={moment.utc(state.transactionInput.date) || moment()}
+              defaultValue={moment(state.transactionInput.date)}
               format="YYYY/MM/DD"
               name={'date'}
               placeholder={t('transaction.form.selectDate')}

@@ -230,7 +230,7 @@ const AccountCard = ({
     const date = format(
       new Date(lastTransaction.date),
       DEFAULT_DATE_FORMAT,
-      true
+      false
     );
 
     return (

@@ -167,7 +167,7 @@ const TransactionCard = ({
     const dateString = format(
       new Date(transaction.date),
       DEFAULT_DATE_FORMAT,
-      true
+      false
     );
     if (account.isShared) {
       const userName = isTransactionForCurrentUser
