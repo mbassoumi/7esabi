@@ -148,13 +148,18 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
     onOk();
   };
 
-  const renderCustomizedLabel = ({ dataEntry }: any) => {
+  const renderCustomizedLabel = ({ dataEntry, dx, dy }: any) => {
     let name = dataEntry.title;
-    if (name.length > 30) {
-      name = name.substring(0, 30) + '...';
+    if (name.length > 80) {
+      name = name.substring(0, 80) + '...';
     }
     const percentage = `${dataEntry.percentage.toFixed(0)}%`;
-    return `${percentage}, ${name}`;
+    const label = `${percentage} ${name}`;
+
+    if (dx < 0) {
+      return `${name.charAt(0)} ${label}`;
+    }
+    return label;
   };
 
   const pieChart = () => {
@@ -165,9 +170,9 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
           data={chartData || []}
           label={renderCustomizedLabel}
           radius={38}
-          labelPosition={101}
+          labelPosition={100}
           segmentsShift={1}
-          labelStyle={{ fontSize: '7px' }}
+          labelStyle={{ fontSize: '6px' }}
         />
       </div>
     );
@@ -184,17 +189,21 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
         </div>
         <ul>
           {reverse(sortBy(dataList, ['amount'])).map((account) => {
+            const convertedAmount =
+              account.currency == state.selectedCurrency
+                ? ''
+                : `- (${Number(
+                    getConvertedAmount(account) || 0
+                  ).toLocaleString()} ${t(
+                    `account.currency.${state.selectedCurrency}`
+                  )})`;
             return (
               <li key={account.id}>
                 {`${account.fullName}: (${Number(
                   account.amount
                 ).toLocaleString()} ${t(
                   `account.currency.${account.currency}`
-                )}) - (${Number(
-                  getConvertedAmount(account) || account.amount
-                ).toLocaleString()} ${t(
-                  `account.currency.${state.selectedCurrency}`
-                )})`}
+                )}) ${convertedAmount}`}
               </li>
             );
           })}
@@ -251,7 +260,7 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
       <>
         {!isEmpty(chartData) && pieChart()}
         {!isEmpty(chartData) && (
-          <div>
+          <div className="account-stats-modal__total-amount">
             {`${t('stats.totalAmount')}: ${Number(
               totalCreditAmounts || 0
             ).toLocaleString()} ${t(
@@ -272,6 +281,7 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
   return (
     <Modal
       visible={true}
+      width="750px"
       maskClosable={false}
       title={t('account.card.stats')}
       onCancel={onOkClick}
