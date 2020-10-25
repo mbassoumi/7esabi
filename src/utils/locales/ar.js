@@ -147,6 +147,7 @@ export default {
 
     stats: {
       selectAccountsPlaceholder: 'اختر الحسابات',
+      totalAmount: 'المجموع الكلي',
     },
   },
 };

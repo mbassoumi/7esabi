@@ -173,6 +173,12 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
     return (
       <>
         {!isEmpty(chartData) && pieChart()}
+        {!isEmpty(chartData) && (
+          <div>
+            {t('stats.totalAmount')}:{' '}
+            {Number(totalCreditAmounts || 0).toLocaleString()}
+          </div>
+        )}
         {!isEmpty(creditAccounts) && detailsList(creditAccounts, 1)}
         {!isEmpty(debitAccounts) && detailsList(debitAccounts, -1)}
       </>
@@ -182,6 +188,7 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
   return (
     <Modal
       visible={true}
+      maskClosable={false}
       title={t('account.card.stats')}
       onCancel={onOkClick}
       footer={

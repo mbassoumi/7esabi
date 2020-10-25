@@ -147,6 +147,7 @@ export default {
 
     stats: {
       selectAccountsPlaceholder: 'Select accounts',
+      totalAmount: 'Total amount',
     },
   },
 };
