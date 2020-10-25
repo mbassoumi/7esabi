@@ -12,6 +12,9 @@ export default {
         noDataFound: 'لا توجد بيانات',
         success: 'تمت العملية بنجاح',
       },
+      words: {
+        others: 'اخرى',
+      },
       errors: {
         dataIncomplete:
           'حدث خلل.. .البيانات غير مكتملة.. يرجى التأكد من اتصالك في الانترنت',
@@ -140,6 +143,10 @@ export default {
         deposit: 'أضافة',
         withdraw: 'سحب',
       },
+    },
+
+    stats: {
+      selectAccountsPlaceholder: 'اختر الحسابات',
     },
   },
 };

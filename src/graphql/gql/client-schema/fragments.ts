@@ -24,6 +24,7 @@ export const GQL_FRAGMENT_ACCOUNT = gql`
     currency
     transactionsCount
     isShared @client
+    fullName @client
     accountGroup {
       id
       name

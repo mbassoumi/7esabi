@@ -65,6 +65,7 @@ export interface GqlAddAccountGroup_addAccountGroup_accountGroups_accounts {
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlAddAccountGroup_addAccountGroup_accountGroups_accounts_accountGroup;
   permissions: GqlAddAccountGroup_addAccountGroup_accountGroups_accounts_permissions[] | null;
   lastTransaction: GqlAddAccountGroup_addAccountGroup_accountGroups_accounts_lastTransaction | null;
@@ -125,6 +126,7 @@ export interface GqlAddAccountGroup_addAccountGroup_accountPermissions_account {
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlAddAccountGroup_addAccountGroup_accountPermissions_account_accountGroup;
   permissions: GqlAddAccountGroup_addAccountGroup_accountPermissions_account_permissions[] | null;
   lastTransaction: GqlAddAccountGroup_addAccountGroup_accountPermissions_account_lastTransaction | null;

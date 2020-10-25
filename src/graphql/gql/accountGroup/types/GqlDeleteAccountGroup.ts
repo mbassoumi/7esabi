@@ -65,6 +65,7 @@ export interface GqlDeleteAccountGroup_deleteAccountGroup_accountGroups_accounts
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlDeleteAccountGroup_deleteAccountGroup_accountGroups_accounts_accountGroup;
   permissions: GqlDeleteAccountGroup_deleteAccountGroup_accountGroups_accounts_permissions[] | null;
   lastTransaction: GqlDeleteAccountGroup_deleteAccountGroup_accountGroups_accounts_lastTransaction | null;
@@ -125,6 +126,7 @@ export interface GqlDeleteAccountGroup_deleteAccountGroup_accountPermissions_acc
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlDeleteAccountGroup_deleteAccountGroup_accountPermissions_account_accountGroup;
   permissions: GqlDeleteAccountGroup_deleteAccountGroup_accountPermissions_account_permissions[] | null;
   lastTransaction: GqlDeleteAccountGroup_deleteAccountGroup_accountPermissions_account_lastTransaction | null;

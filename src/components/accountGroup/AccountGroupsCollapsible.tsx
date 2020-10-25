@@ -112,6 +112,9 @@ const AccountGroupsCollapsible = ({}: AccountGroupsCollapsibleProps) => {
 
   console.log('roooooooooonder');
 
+  /*
+   * Add Account Button
+   */
   const addAccountButton = (accountGroup: GqlFragmentAccountGroup) => (
     <div className="account-groups-collapsible__add-account">
       <Button
@@ -123,6 +126,10 @@ const AccountGroupsCollapsible = ({}: AccountGroupsCollapsibleProps) => {
       </Button>
     </div>
   );
+
+  /*
+   * other ui components
+   */
 
   const accountGroupCollapsePanel = (
     accountGroup: GqlFragmentAccountGroup,
@@ -147,7 +154,7 @@ const AccountGroupsCollapsible = ({}: AccountGroupsCollapsibleProps) => {
         }
       >
         {!isSharedGroup && addAccountButton(accountGroup)}
-        {accountGroup!.accounts?.map((account) => {
+        {accountGroup!.accounts?.map((account: any) => {
           return (
             <div
               key={`account_${account.id}_card`}

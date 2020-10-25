@@ -12,6 +12,9 @@ export default {
         noDataFound: 'No data available',
         success: 'Operation was successful',
       },
+      words: {
+        others: 'Others',
+      },
       errors: {
         dataIncomplete:
           'An error occurred... The data is not complete... Please check your internet connection',
@@ -140,6 +143,10 @@ export default {
         deposit: 'Deposit',
         withdraw: 'Withdraw',
       },
+    },
+
+    stats: {
+      selectAccountsPlaceholder: 'Select accounts',
     },
   },
 };

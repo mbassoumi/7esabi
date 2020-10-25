@@ -196,7 +196,6 @@ const TransactionCard = ({
 
   return (
     <>
-      {transactionFormModal}
       <div className="transaction-card__container">
         <div
           className={`account-card__entity-control-buttons ${entityControlButtonsRtlClass}`}
@@ -224,6 +223,7 @@ const TransactionCard = ({
           </div>
         </div>
       </div>
+      {transactionFormModal}
     </>
   );
 };

@@ -1,23 +1,12 @@
-import { useQuery } from '@apollo/client';
-import { Alert, Button, Modal, Spin } from 'antd';
-import { find, isEmpty } from 'lodash';
-import React from 'react';
+import { Alert, Button, Modal, Select } from 'antd';
+import { concat, flatten, isEmpty } from 'lodash';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PieChart } from 'react-minimal-pie-chart';
-import { GQL_ACCOUNT_STATS } from '../../graphql/gql/account/getStats';
-import {
-  GqlAccountStats,
-  GqlAccountStats_accountStats,
-} from '../../graphql/gql/account/types/GqlAccountStats';
+import { GqlSessionDataQuery_sessionData_user } from '../../graphql/gql/auth/types/GqlSessionDataQuery';
 import { GqlFragmentAccount } from '../../graphql/gql/client-schema/types/GqlFragmentAccount';
-import { TransactionType } from '../../graphql/gql/globalTypes';
-import { useAllUsers, useCurrentUser } from '../helpers/storeHelper';
+import { useCurrentUser } from '../helpers/storeHelper';
 import './styles/accountStatsModal.scss';
-
-interface AccountStatsModalProps {
-  account: GqlFragmentAccount;
-  onOk: () => any;
-}
 
 const COLORS = [
   '#0088FE',
@@ -34,50 +23,72 @@ const COLORS = [
   '#cfe3b1',
 ];
 
-const AccountStatsModal = ({ account, onOk }: AccountStatsModalProps) => {
-  const { t } = useTranslation();
-  const currentUser = useCurrentUser();
-  const allUsers = useAllUsers();
+interface AccountStatsModalProps {
+  onOk: () => any;
+}
 
-  const { loading, error, data } = useQuery<GqlAccountStats>(
-    GQL_ACCOUNT_STATS,
-    { variables: { accountId: account.id } }
+interface AccountStatsModalState {
+  selectedAccounts: GqlFragmentAccount[];
+}
+
+const extractAllAccounts = (user: GqlSessionDataQuery_sessionData_user) => {
+  const ownedAccounts = flatten(
+    user.accountGroups?.map((accountGroup) => accountGroup.accounts) || []
   );
+
+  const externalAccounts =
+    user.accountPermissions?.map(
+      (accountPermission) => accountPermission.account
+    ) || [];
+
+  return concat(ownedAccounts, externalAccounts);
+};
+
+const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
+  const { t } = useTranslation();
+  const currentUser = useCurrentUser()!;
+  const allAccounts = extractAllAccounts(currentUser);
+
+  const [state, setState] = useState({
+    selectedAccounts: [],
+  } as AccountStatsModalState);
+
+  const creditAccounts: GqlFragmentAccount[] = [];
+  const debitAccounts: GqlFragmentAccount[] = [];
+  let chartData: any = [];
+
+  const filteredOptions = allAccounts.filter(
+    (account) => !state.selectedAccounts.includes(account! as any)
+  ) as any;
 
   const onOkClick = async (event: any) => {
     event.stopPropagation();
     onOk();
   };
 
-  const creditStats: GqlAccountStats_accountStats[] = [];
-  const debitStats: GqlAccountStats_accountStats[] = [];
+  const onSelectedAccountsChange = (selectedAccountIdsOrNames: string[]) => {
+    setState((state) => ({
+      ...state,
+      selectedAccounts: allAccounts.filter(
+        (account) =>
+          selectedAccountIdsOrNames.includes(account!.id) ||
+          selectedAccountIdsOrNames.includes(account!.fullName)
+      ) as any,
+    }));
+  };
 
   const renderCustomizedLabel = ({ dataEntry }: any) => {
     const name = dataEntry.title;
     const percentage = `${dataEntry.percentage.toFixed(0)}%`;
-    return `${name} ${percentage}`;
-  };
-
-  const getUserNameForChart = (userId: string) => {
-    if (userId == currentUser!.id) {
-      return t('user.you');
-    }
-    const user = find(allUsers, { id: userId })!;
-    return `${user.profile.firstName} ${user.profile.lastName.charAt(0)}`;
+    return `${percentage} - ${name}`;
   };
 
   const pieChart = () => {
-    const data: any = creditStats.map((accountStat, index) => ({
-      title: getUserNameForChart(accountStat.userId),
-      value: accountStat.amount,
-      color: COLORS[index % COLORS.length],
-    }));
-
     return (
       <div className="account-stats-modal__chart">
         <PieChart
           animate
-          data={data || []}
+          data={chartData || []}
           label={renderCustomizedLabel}
           radius={20}
           labelPosition={110}
@@ -90,24 +101,21 @@ const AccountStatsModal = ({ account, onOk }: AccountStatsModalProps) => {
     );
   };
 
-  const detailsList = (
-    dataList: GqlAccountStats_accountStats[],
-    type: TransactionType
-  ) => {
+  const detailsList = (dataList: GqlFragmentAccount[], amount: number) => {
     return (
       <div className="account-stats-modal__details-list">
         <div>
-          {type == TransactionType.CREDIT
+          {amount >= 0
             ? t('account.card.participation')
             : t('account.card.debits')}
           :
         </div>
         <ul>
-          {dataList.map((accountStat) => {
+          {dataList.map((account) => {
             return (
-              <li key={accountStat.userId}>
-                {`${getUserNameForChart(accountStat.userId)}: ${Number(
-                  accountStat.amount
+              <li key={account.id}>
+                {`${account.fullName}: ${Number(
+                  account.amount
                 ).toLocaleString()} ${t(
                   `account.currency.${account.currency}`
                 )}`}
@@ -120,36 +128,53 @@ const AccountStatsModal = ({ account, onOk }: AccountStatsModalProps) => {
   };
 
   const modalContent = () => {
-    if (loading)
-      return (
-        <div className="account-stats-modal__loading">
-          <Spin size={'default'} />
-        </div>
-      );
-
-    if (error)
-      return (
-        <Alert message={t('generic.errors.operationFailed')} type={'error'} />
-      );
-
-    for (let accountStat of data!.accountStats || []) {
-      accountStat.amount < 0
-        ? debitStats.push(accountStat)
-        : creditStats.push(accountStat);
+    let totalCreditAmounts = 0;
+    for (let account of state.selectedAccounts! || []) {
+      if (account!.amount! >= 0) {
+        totalCreditAmounts = totalCreditAmounts + account.amount!;
+        creditAccounts.push(account);
+      } else {
+        debitAccounts.push(account);
+      }
     }
 
-    if (isEmpty(creditStats) && isEmpty(debitStats)) {
+    if (isEmpty(creditAccounts) && isEmpty(debitAccounts)) {
       return (
         <Alert message={t('generic.messages.noDataFound')} type={'info'} />
       );
     }
 
+    // filter out any amount that is less than < 3% of the amount so that
+    // the chart won't become crowded and over each other
+    let insignificantAmounts = 0;
+    let index = 0;
+    const significantAmountThreshold = totalCreditAmounts * 0.03;
+    for (let account of creditAccounts) {
+      if (account.amount! >= significantAmountThreshold) {
+        chartData.push({
+          title: account.fullName,
+          value: account.amount,
+          color: COLORS[index % COLORS.length],
+        });
+        index = index + 1;
+      } else {
+        insignificantAmounts = insignificantAmounts + account.amount!;
+      }
+    }
+
+    if (insignificantAmounts > 0) {
+      chartData.push({
+        title: t('generic.words.others'),
+        value: insignificantAmounts,
+        color: COLORS[index % COLORS.length],
+      });
+    }
+
     return (
       <>
-        {!isEmpty(creditStats) && pieChart()}
-        {!isEmpty(creditStats) &&
-          detailsList(creditStats, TransactionType.CREDIT)}
-        {!isEmpty(debitStats) && detailsList(debitStats, TransactionType.DEBIT)}
+        {!isEmpty(chartData) && pieChart()}
+        {!isEmpty(creditAccounts) && detailsList(creditAccounts, 1)}
+        {!isEmpty(debitAccounts) && detailsList(debitAccounts, -1)}
       </>
     );
   };
@@ -165,7 +190,25 @@ const AccountStatsModal = ({ account, onOk }: AccountStatsModalProps) => {
         </Button>
       }
     >
-      <div className="account-stats-modal">{modalContent()}</div>
+      <div className="account-stats-modal">
+        <Select
+          mode="multiple"
+          placeholder={t('stats.selectAccountsPlaceholder')}
+          value={state.selectedAccounts.map((account) => account.fullName)}
+          onChange={onSelectedAccountsChange}
+          style={{ width: '100%' }}
+        >
+          {filteredOptions.map((account: GqlFragmentAccount) => (
+            <Select.Option
+              key={`stats_all_accounts_selector_${account.id}`}
+              value={account.id}
+            >
+              {account.fullName}
+            </Select.Option>
+          ))}
+        </Select>
+        {modalContent()}
+      </div>
     </Modal>
   );
 };

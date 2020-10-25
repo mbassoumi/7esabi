@@ -65,6 +65,7 @@ export interface GqlUpdateUserProfile_updateUserProfile_accountGroups_accounts {
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlUpdateUserProfile_updateUserProfile_accountGroups_accounts_accountGroup;
   permissions: GqlUpdateUserProfile_updateUserProfile_accountGroups_accounts_permissions[] | null;
   lastTransaction: GqlUpdateUserProfile_updateUserProfile_accountGroups_accounts_lastTransaction | null;
@@ -125,6 +126,7 @@ export interface GqlUpdateUserProfile_updateUserProfile_accountPermissions_accou
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlUpdateUserProfile_updateUserProfile_accountPermissions_account_accountGroup;
   permissions: GqlUpdateUserProfile_updateUserProfile_accountPermissions_account_permissions[] | null;
   lastTransaction: GqlUpdateUserProfile_updateUserProfile_accountPermissions_account_lastTransaction | null;
