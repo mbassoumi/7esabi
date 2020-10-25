@@ -65,6 +65,7 @@ export interface GqlSessionDataQuery_sessionData_user_accountGroups_accounts {
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlSessionDataQuery_sessionData_user_accountGroups_accounts_accountGroup;
   permissions: GqlSessionDataQuery_sessionData_user_accountGroups_accounts_permissions[] | null;
   lastTransaction: GqlSessionDataQuery_sessionData_user_accountGroups_accounts_lastTransaction | null;
@@ -125,6 +126,7 @@ export interface GqlSessionDataQuery_sessionData_user_accountPermissions_account
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlSessionDataQuery_sessionData_user_accountPermissions_account_accountGroup;
   permissions: GqlSessionDataQuery_sessionData_user_accountPermissions_account_permissions[] | null;
   lastTransaction: GqlSessionDataQuery_sessionData_user_accountPermissions_account_lastTransaction | null;

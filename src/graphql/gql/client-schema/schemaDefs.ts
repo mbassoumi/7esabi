@@ -12,6 +12,7 @@ export const clientTypeDefs = gql`
 
   extend type Account {
     isShared: Boolean!
+    fullName: String!
   }
 
   extend type Query {
@@ -37,6 +38,9 @@ export const clientResolvers: AppResolvers = {
   Account: {
     isShared: (account: GqlFragmentAccount, _, { cache }): boolean => {
       return !isEmpty(account.permissions);
+    },
+    fullName: (account: GqlFragmentAccount, _, { cache }): string => {
+      return `${account.accountGroup.name} - ${account.name}`;
     },
   },
   User: {

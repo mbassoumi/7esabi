@@ -24,7 +24,7 @@ const Account = ({ updateHeaderTitle }: PrivateRouteProps) => {
 
   useEffect(() => {
     if (account) {
-      updateHeaderTitle(`${account.accountGroup.name} - ${account.name}`);
+      updateHeaderTitle(`${account.fullName}`);
     }
   }, [account]);
 

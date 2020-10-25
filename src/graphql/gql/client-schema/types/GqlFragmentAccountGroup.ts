@@ -57,6 +57,7 @@ export interface GqlFragmentAccountGroup_accounts {
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlFragmentAccountGroup_accounts_accountGroup;
   permissions: GqlFragmentAccountGroup_accounts_permissions[] | null;
   lastTransaction: GqlFragmentAccountGroup_accounts_lastTransaction | null;

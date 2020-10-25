@@ -68,7 +68,7 @@ const DeleteAccountModal = ({
             color="red"
             style={{ marginLeft: '3px', marginRight: '3px', fontSize: '20px' }}
           />
-          {`${t('account.deleteForm.title')} : ${account.name}`}
+          {`${t('account.deleteForm.title')} : ${account.fullName}`}
         </span>
       }
       onCancel={onCancelClick}

@@ -57,6 +57,7 @@ export interface GqlDeleteTransaction_deleteTransaction {
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlDeleteTransaction_deleteTransaction_accountGroup;
   permissions: GqlDeleteTransaction_deleteTransaction_permissions[] | null;
   lastTransaction: GqlDeleteTransaction_deleteTransaction_lastTransaction | null;

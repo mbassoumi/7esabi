@@ -1,6 +1,5 @@
 import {
   faAddressBook,
-  faChartPie,
   faPlus,
   faUsers,
 } from '@fortawesome/free-solid-svg-icons';
@@ -24,7 +23,6 @@ import CurrencyIcon from '../shared/Currency';
 import { EntityActionButtons } from '../shared/EntityActionButtons';
 import TransactionFormModal from '../transaction/TransactionFormModal';
 import AccountFormModal from './AccountFormModal';
-import AccountStatsModal from './AccountStatsModal';
 import DeleteAccountModal from './DeleteAccountModal';
 import './styles/accountCard.scss';
 import ViewAccountPermissionsModal from './ViewAccountPermissionsModal';
@@ -41,7 +39,6 @@ interface AccountCardState {
   accountFormModalVisible: boolean;
   deleteAccountModalVisible: boolean;
   viewAccountPermissionsModalVisible: boolean;
-  accountStatsModalVisible: boolean;
 }
 
 const AccountCard = ({
@@ -64,7 +61,6 @@ const AccountCard = ({
     accountFormModalVisible: false,
     deleteAccountModalVisible: false,
     viewAccountPermissionsModalVisible: false,
-    accountStatsModalVisible: false,
   } as AccountCardState);
 
   const closeModals = () => {
@@ -172,20 +168,6 @@ const AccountCard = ({
   };
 
   /*
-   * View Account Stats for Shared accounts
-   */
-  const accountStatsModal = state.accountStatsModalVisible && (
-    <AccountStatsModal account={account} onOk={closeModals} />
-  );
-
-  const showViewStatsModal = () => {
-    setState((state) => ({
-      ...state,
-      accountStatsModalVisible: true,
-    }));
-  };
-
-  /*
    * Action buttons
    */
 
@@ -204,31 +186,13 @@ const AccountCard = ({
     </Tooltip>
   );
 
-  const viewStatsButton = (
-    <Tooltip
-      placement="topLeft"
-      title={t(`account.card.stats`)}
-      arrowPointAtCenter
-    >
-      <Button
-        className="entity-action-buttons__button"
-        onClick={showViewStatsModal}
-      >
-        <FontAwesomeIcon icon={faChartPie} color="crimson" />
-      </Button>
-    </Tooltip>
-  );
-
   const accountActionButtons = () => {
     const onEditButton = isAccountForCurrentUser ? openAccountFormModal : null;
     const onDeleteButton = isAccountForCurrentUser
       ? openDeleteAccountModal
       : null;
     const extraButtons = account.isShared && (
-      <>
-        {!isEmpty(account.lastTransaction) && viewStatsButton}
-        {!isAccountForCurrentUser && viewAccountPermissionsButton}
-      </>
+      <>{!isAccountForCurrentUser && viewAccountPermissionsButton}</>
     );
 
     return (
@@ -323,7 +287,7 @@ const AccountCard = ({
 
   const accountFullName = () => {
     if (!isAccountForCurrentUser) {
-      return `${account.accountGroup.name} - ${account.name}`;
+      return `${account.fullName}`;
     }
     return `${account.name}`;
   };
@@ -412,12 +376,11 @@ const AccountCard = ({
 
   return (
     <>
+      {account && !isInFullAccountMode ? accountCard : accountCardFull}
       {transactionFormModal}
       {accountFormModal}
       {deleteAccountModal}
       {viewAccountPermissionsModal}
-      {accountStatsModal}
-      {account && !isInFullAccountMode ? accountCard : accountCardFull}
     </>
   );
 };

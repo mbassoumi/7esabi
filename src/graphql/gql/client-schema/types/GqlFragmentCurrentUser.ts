@@ -65,6 +65,7 @@ export interface GqlFragmentCurrentUser_accountGroups_accounts {
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlFragmentCurrentUser_accountGroups_accounts_accountGroup;
   permissions: GqlFragmentCurrentUser_accountGroups_accounts_permissions[] | null;
   lastTransaction: GqlFragmentCurrentUser_accountGroups_accounts_lastTransaction | null;
@@ -125,6 +126,7 @@ export interface GqlFragmentCurrentUser_accountPermissions_account {
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlFragmentCurrentUser_accountPermissions_account_accountGroup;
   permissions: GqlFragmentCurrentUser_accountPermissions_account_permissions[] | null;
   lastTransaction: GqlFragmentCurrentUser_accountPermissions_account_lastTransaction | null;

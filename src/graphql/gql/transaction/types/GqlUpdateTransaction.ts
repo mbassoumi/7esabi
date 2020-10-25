@@ -57,6 +57,7 @@ export interface GqlUpdateTransaction_updateTransaction {
   currency: Currency;
   transactionsCount: number | null;
   isShared: boolean;
+  fullName: string;
   accountGroup: GqlUpdateTransaction_updateTransaction_accountGroup;
   permissions: GqlUpdateTransaction_updateTransaction_permissions[] | null;
   lastTransaction: GqlUpdateTransaction_updateTransaction_lastTransaction | null;
