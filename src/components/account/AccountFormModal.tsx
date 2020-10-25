@@ -15,18 +15,18 @@ import {
   AccountPermissionInput,
   Currency,
 } from '../../graphql/gql/globalTypes';
-import './styles/accountForm.scss';
-import {
-  DEFAULT_ERROR_MESSAGE_DURATION,
-  DEFAULT_SUCCESS_MESSAGE_DURATION,
-} from '../../utils/appVars';
 import {
   convertToAccountGroupInput,
   convertToAccountPermissionsInput,
 } from '../../graphql/utils/typeHelpers';
-import CurrencyIcon from '../shared/Currency';
+import {
+  DEFAULT_ERROR_MESSAGE_DURATION,
+  DEFAULT_SUCCESS_MESSAGE_DURATION,
+} from '../../utils/appVars';
+import CurrencySelector from '../shared/currencySelector';
 import FormModalFooter from '../shared/FormModalFooter';
 import AccountPermissionsForm from './AccountPermissionsForm';
+import './styles/accountForm.scss';
 
 interface AccountFormModalProps {
   onSave: (mutationInfo: any) => any;
@@ -240,24 +240,10 @@ const AccountFormModal = ({
   );
 
   const currencySelector = () => (
-    <Select
-      size="large"
-      className="account-form__input__select"
-      value={state.accountInput.currency}
-      onChange={onCurrencySelectChange}
-      placeholder={t('account.form.selectCurrency')}
-    >
-      {Object.keys(Currency).map((key: string) => (
-        <Select.Option key={key} value={key}>
-          <span className="">
-            <CurrencyIcon currencyType={key as Currency} />
-          </span>
-          <span className="account-form__input__select__option">
-            {t(`account.currency.${key}`)}
-          </span>
-        </Select.Option>
-      ))}
-    </Select>
+    <CurrencySelector
+      selectedCurrency={state.accountInput.currency}
+      onCurrencySelectChange={onCurrencySelectChange}
+    />
   );
 
   return (

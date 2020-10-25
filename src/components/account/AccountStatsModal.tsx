@@ -1,11 +1,14 @@
 import { Alert, Button, Modal, Select } from 'antd';
-import { concat, flatten, isEmpty } from 'lodash';
-import React, { useState } from 'react';
+import axios from 'axios';
+import { concat, flatten, isEmpty, reverse, sortBy } from 'lodash';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PieChart } from 'react-minimal-pie-chart';
 import { GqlSessionDataQuery_sessionData_user } from '../../graphql/gql/auth/types/GqlSessionDataQuery';
 import { GqlFragmentAccount } from '../../graphql/gql/client-schema/types/GqlFragmentAccount';
+import { Currency } from '../../graphql/gql/globalTypes';
 import { useCurrentUser } from '../helpers/storeHelper';
+import CurrencySelector from '../shared/currencySelector';
 import './styles/accountStatsModal.scss';
 
 const COLORS = [
@@ -29,6 +32,8 @@ interface AccountStatsModalProps {
 
 interface AccountStatsModalState {
   selectedAccounts: GqlFragmentAccount[];
+  selectedCurrency: Currency;
+  accountConversions: any;
 }
 
 const extractAllAccounts = (user: GqlSessionDataQuery_sessionData_user) => {
@@ -44,6 +49,14 @@ const extractAllAccounts = (user: GqlSessionDataQuery_sessionData_user) => {
   return concat(ownedAccounts, externalAccounts);
 };
 
+const currencyFormalCode = (currency: Currency) => {
+  if (currency == Currency.USD || currency == Currency.JOD) return currency;
+
+  if (currency == Currency.NIS) return 'ILS';
+
+  return 'EUR';
+};
+
 const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
   const { t } = useTranslation();
   const currentUser = useCurrentUser()!;
@@ -51,20 +64,13 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
 
   const [state, setState] = useState({
     selectedAccounts: [],
+    selectedCurrency: Currency.USD,
+    accountConversions: {},
   } as AccountStatsModalState);
 
-  const creditAccounts: GqlFragmentAccount[] = [];
-  const debitAccounts: GqlFragmentAccount[] = [];
-  let chartData: any = [];
-
-  const filteredOptions = allAccounts.filter(
-    (account) => !state.selectedAccounts.includes(account! as any)
-  ) as any;
-
-  const onOkClick = async (event: any) => {
-    event.stopPropagation();
-    onOk();
-  };
+  useEffect(() => {
+    updateAccountConversions();
+  }, [state.selectedAccounts, state.selectedCurrency]);
 
   const onSelectedAccountsChange = (selectedAccountIdsOrNames: string[]) => {
     setState((state) => ({
@@ -77,10 +83,78 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
     }));
   };
 
+  const onCurrencySelectChange = (selectValue: string) => {
+    setState((state: any) => ({
+      ...state,
+      selectedCurrency: (Currency as any)[selectValue],
+    }));
+  };
+
+  const updateAccountConversions = () => {
+    for (let account of state.selectedAccounts! || []) {
+      if (account.currency == state.selectedCurrency || account.amount == 0)
+        continue;
+
+      const convertedAmount = getConvertedAmount(account);
+      if (!convertedAmount) {
+        const srcCurrency = currencyFormalCode(account.currency);
+        const destCurrency = currencyFormalCode(state.selectedCurrency);
+        const queryParam = `${srcCurrency}_${destCurrency}`;
+        axios
+          .get(
+            `https://free.currconv.com/api/v7/convert?q=${queryParam}&compact=ultra&apiKey=315c78b4ac4bec821a28`
+          )
+          .then((res) => {
+            const convertedAmount = (res.data && res.data[queryParam]) || -1;
+            updateSelectedAccountAmount(account, destCurrency, convertedAmount);
+          });
+      }
+    }
+  };
+
+  const updateSelectedAccountAmount = (
+    account: any,
+    currencyCode: string,
+    amount: number
+  ) => {
+    setState((state) => {
+      const accountConversions = state.accountConversions || {};
+      const targetAccount = accountConversions[account.id];
+      if (targetAccount) {
+        targetAccount.conversions[currencyCode] = amount;
+      } else {
+        accountConversions[account.id] = {
+          conversions: { [currencyCode]: amount },
+        };
+      }
+      return { ...state, accountConversions: { ...accountConversions } };
+    });
+  };
+
+  const getConvertedAmount = (account: any) => {
+    const convertedAccount =
+      state.accountConversions[account.id] || ({ conversions: {} } as any);
+    return convertedAccount.conversions[
+      currencyFormalCode(state.selectedCurrency)
+    ];
+  };
+
+  const creditAccounts: GqlFragmentAccount[] = [];
+  const debitAccounts: GqlFragmentAccount[] = [];
+  let chartData: any = [];
+
+  const onOkClick = async (event: any) => {
+    event.stopPropagation();
+    onOk();
+  };
+
   const renderCustomizedLabel = ({ dataEntry }: any) => {
-    const name = dataEntry.title;
+    let name = dataEntry.title;
+    if (name.length > 30) {
+      name = name.substring(0, 30) + '...';
+    }
     const percentage = `${dataEntry.percentage.toFixed(0)}%`;
-    return `${percentage} - ${name}`;
+    return `${percentage}, ${name}`;
   };
 
   const pieChart = () => {
@@ -90,12 +164,10 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
           animate
           data={chartData || []}
           label={renderCustomizedLabel}
-          radius={20}
-          labelPosition={110}
-          viewBoxSize={[100, 100]}
-          center={[50, 50]}
+          radius={38}
+          labelPosition={101}
           segmentsShift={1}
-          labelStyle={{ fontSize: '10px' }}
+          labelStyle={{ fontSize: '7px' }}
         />
       </div>
     );
@@ -111,14 +183,18 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
           :
         </div>
         <ul>
-          {dataList.map((account) => {
+          {reverse(sortBy(dataList, ['amount'])).map((account) => {
             return (
               <li key={account.id}>
-                {`${account.fullName}: ${Number(
+                {`${account.fullName}: (${Number(
                   account.amount
                 ).toLocaleString()} ${t(
                   `account.currency.${account.currency}`
-                )}`}
+                )}) - (${Number(
+                  getConvertedAmount(account) || account.amount
+                ).toLocaleString()} ${t(
+                  `account.currency.${state.selectedCurrency}`
+                )})`}
               </li>
             );
           })}
@@ -130,7 +206,8 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
   const modalContent = () => {
     let totalCreditAmounts = 0;
     for (let account of state.selectedAccounts! || []) {
-      if (account!.amount! >= 0) {
+      const convertedAmount = getConvertedAmount(account) || account.amount;
+      if (convertedAmount >= 0) {
         totalCreditAmounts = totalCreditAmounts + account.amount!;
         creditAccounts.push(account);
       } else {
@@ -175,8 +252,11 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
         {!isEmpty(chartData) && pieChart()}
         {!isEmpty(chartData) && (
           <div>
-            {t('stats.totalAmount')}:{' '}
-            {Number(totalCreditAmounts || 0).toLocaleString()}
+            {`${t('stats.totalAmount')}: ${Number(
+              totalCreditAmounts || 0
+            ).toLocaleString()} ${t(
+              `account.currency.${state.selectedCurrency}`
+            )}`}
           </div>
         )}
         {!isEmpty(creditAccounts) && detailsList(creditAccounts, 1)}
@@ -184,6 +264,10 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
       </>
     );
   };
+
+  const filteredOptions = allAccounts.filter(
+    (account) => !state.selectedAccounts.includes(account! as any)
+  ) as any;
 
   return (
     <Modal
@@ -214,7 +298,12 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
             </Select.Option>
           ))}
         </Select>
-        {modalContent()}
+        <CurrencySelector
+          selectedCurrency={state.selectedCurrency}
+          onCurrencySelectChange={onCurrencySelectChange}
+          selectSize="middle"
+        />
+        <div className="account-stats-modal__container">{modalContent()}</div>
       </div>
     </Modal>
   );
