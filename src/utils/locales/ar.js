@@ -148,6 +148,8 @@ export default {
     stats: {
       selectAccountsPlaceholder: 'اختر الحسابات',
       totalAmount: 'المجموع الكلي',
+      conversionApiIsDown:
+        'خدمة تحويل العملات لا تعمل حاليا... الأرقام أدناه قد تكون غير صحيحة... يرجى المحاولة لاحقا',
     },
   },
 };

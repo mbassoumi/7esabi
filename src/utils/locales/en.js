@@ -148,6 +148,8 @@ export default {
     stats: {
       selectAccountsPlaceholder: 'Select accounts',
       totalAmount: 'Total amount',
+      conversionApiIsDown:
+        'Incorrect conversions! Currency conversion service is currently down.. Please try again later',
     },
   },
 };

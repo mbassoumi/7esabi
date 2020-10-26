@@ -34,6 +34,7 @@ interface AccountStatsModalState {
   selectedAccounts: GqlFragmentAccount[];
   selectedCurrency: Currency;
   accountConversions: any;
+  conversionApiIsDown: boolean;
 }
 
 const extractAllAccounts = (user: GqlSessionDataQuery_sessionData_user) => {
@@ -66,6 +67,7 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
     selectedAccounts: [],
     selectedCurrency: Currency.USD,
     accountConversions: {},
+    conversionApiIsDown: false,
   } as AccountStatsModalState);
 
   useEffect(() => {
@@ -110,6 +112,13 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
               ? account.amount! * conversionRatio
               : -1;
             updateSelectedAccountAmount(account, destCurrency, convertedAmount);
+          })
+          .catch((error) => {
+            console.log(error);
+            setState((state) => ({
+              ...state,
+              conversionApiIsDown: true,
+            }));
           });
       }
     }
@@ -130,7 +139,11 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
           conversions: { [currencyCode]: amount },
         };
       }
-      return { ...state, accountConversions: { ...accountConversions } };
+      return {
+        ...state,
+        accountConversions: { ...accountConversions },
+        conversionApiIsDown: false,
+      };
     });
   };
 
@@ -296,6 +309,9 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
       }
     >
       <div className="account-stats-modal">
+        {state.conversionApiIsDown && (
+          <Alert message={t('stats.conversionApiIsDown')} type={'error'} />
+        )}
         <Select
           mode="multiple"
           placeholder={t('stats.selectAccountsPlaceholder')}
