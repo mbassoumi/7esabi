@@ -1,21 +1,20 @@
-import { useMutation } from '@apollo/client';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { message, Modal } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { GQL_DELETE_ACCOUNT_GROUP } from '../../graphql/gql/accountGroup/delete';
-import { GqlDeleteAccountGroup } from '../../graphql/gql/accountGroup/types/GqlDeleteAccountGroup';
-import { GqlFragmentAccountGroup } from '../../graphql/gql/client-schema/types/GqlFragmentAccountGroup';
 import {
   DEFAULT_ERROR_MESSAGE_DURATION,
   DEFAULT_SUCCESS_MESSAGE_DURATION,
 } from '../../utils/appVars';
 import FormModalFooter from '../shared/FormModalFooter';
+import { AccountGroup } from '../../@types/AccountGroup';
+import { deleteAccountGroupApi } from '../../api/accountGroup';
+import { useMutation } from 'react-query';
 
 interface DeleteGroupModalProps {
-  accountGroup: GqlFragmentAccountGroup;
-  onDelete: (mutationInfo: any) => any;
+  accountGroup: AccountGroup;
+  onDelete: () => any;
   onCancel: (event: any) => any;
 }
 
@@ -26,24 +25,22 @@ const DeleteGroupModal = ({
 }: DeleteGroupModalProps) => {
   const { t } = useTranslation();
 
-  const [deleteAccountGroupFn, deleteAccountGroupMutationInfo] = useMutation<
-    GqlDeleteAccountGroup
-  >(GQL_DELETE_ACCOUNT_GROUP);
+  const deleteAccountGroupMutation = useMutation(async () =>
+    deleteAccountGroupApi(accountGroup.id)
+  );
 
   const onDeleteClick = async (event: any) => {
     event.stopPropagation();
 
     try {
-      const data = await deleteAccountGroupFn({
-        variables: { id: accountGroup!.id },
-      });
+      const mutationResponse = await deleteAccountGroupMutation.mutateAsync();
 
       message.success(
         t(`generic.messages.success`),
         DEFAULT_SUCCESS_MESSAGE_DURATION
       );
 
-      onDelete(data);
+      await onDelete();
     } catch (error) {
       console.log('error', error);
       message.error(
@@ -76,7 +73,7 @@ const DeleteGroupModal = ({
         <FormModalFooter
           onSaveOrDeleteClick={onDeleteClick}
           onCancelClick={onCancelClick}
-          loading={deleteAccountGroupMutationInfo.loading}
+          loading={deleteAccountGroupMutation.isLoading}
           disabled={false}
           isForDelete={true}
         />

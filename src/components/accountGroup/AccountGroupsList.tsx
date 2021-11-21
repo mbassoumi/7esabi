@@ -3,10 +3,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Tooltip } from 'antd';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import AccountStatsModal from '../account/AccountStatsModal';
-import AccountGroupFormModal from './AccountGroupFormModal';
 import AccountGroupsCollapsible from './AccountGroupsCollapsible';
 import './styles/accountGroupsList.scss';
+import AccountGroupFormModal from './AccountGroupFormModal';
+import { useQuery } from 'react-query';
+import { listAccountGroupApi } from '../../api/accountGroup';
+import LoadingSpinner from '../shared/LoadingSpinner';
+import {
+  queryKeyForAccountGroupsList,
+  refreshAccountGroups,
+} from '../helpers/storeHelper';
+import AccountStatsModal from '../account/AccountStatsModal';
 
 interface AccountGroupsListModalsState {
   accountGroupFormModalVisible: boolean;
@@ -16,12 +23,19 @@ interface AccountGroupsListModalsState {
 const AccountGroupsList = () => {
   const { t } = useTranslation();
 
-  const [state, setState] = useState({
+  // to load account groups... children components would read them from useQuery cache.
+  const { isLoading } = useQuery(
+    queryKeyForAccountGroupsList(),
+    listAccountGroupApi
+  );
+
+  const [state, setState] = useState<AccountGroupsListModalsState>({
     accountGroupFormModalVisible: false,
     accountStatsModalVisible: false,
-  } as AccountGroupsListModalsState);
+  });
 
-  const onSaveAccountGroup = async (mutationInfo: any) => {
+  const onSaveAccountGroup = async (_mutationResponse: any) => {
+    await refreshAccountGroups();
     closeModals();
   };
 
@@ -69,12 +83,13 @@ const AccountGroupsList = () => {
    * ui
    */
 
+  if (isLoading) return <LoadingSpinner />;
+
   return (
     <>
       {accountStatsModal}
       {state.accountGroupFormModalVisible && (
         <AccountGroupFormModal
-          updateMode={false}
           onSave={onSaveAccountGroup}
           onCancel={closeModals}
         />

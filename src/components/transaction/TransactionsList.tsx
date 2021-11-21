@@ -1,74 +1,106 @@
-import { useQuery } from '@apollo/client';
-import { Alert, List } from 'antd';
-import { isEmpty } from 'lodash';
-import React, { useEffect, useState } from 'react';
+import { Alert, Button, List } from 'antd';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GqlFragmentAccount } from '../../graphql/gql/client-schema/types/GqlFragmentAccount';
-import { GQL_TRANSACTIONS_PAGINATED } from '../../graphql/gql/transaction/getPaginated';
-import { GqlTransactionsPaginated } from '../../graphql/gql/transaction/types/GqlTransactionsPaginated';
-import { showGenericOperationFailedMessage } from '../../graphql/utils/errorsHelper';
 import TransactionCard from './TransactionCard';
 import './styles/transactionsList.scss';
+import { Account } from '../../@types/Account';
+import { useQuery } from 'react-query';
+import {
+  getCachedCurrentUser,
+  queryKeyForAccountTransactionsList,
+  refreshAccount,
+} from '../helpers/storeHelper';
+import { listTransactionsApi } from '../../api/accountTransactions';
+import { showGenericOperationFailedMessage } from '../../utils/helpers';
+import TransactionFormModal from './TransactionFormModal';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 interface TransactionsListProps {
-  account: GqlFragmentAccount;
-  initialTransactionsListPage: number;
+  account: Account;
 }
 
 interface TransactionsListState {
   currentPage: number;
+  transactionFormModalVisible: boolean;
 }
 
-const DEFAULT_PAGE_SIZE = 10;
-const TransactionsList = ({
-  account,
-  initialTransactionsListPage = 1,
-}: TransactionsListProps) => {
+const DEFAULT_PAGE_SIZE = 3;
+const TransactionsList = ({ account }: TransactionsListProps) => {
   const { t } = useTranslation();
-  const [state, setState] = useState({
-    currentPage: 1,
-  } as TransactionsListState);
+  const currentUser = getCachedCurrentUser();
+  const accountGroup = account!.account_group;
+  const isAccountForCurrentUser = currentUser.id === accountGroup.user_id;
 
-  const { loading, error, data, fetchMore } = useQuery<
-    GqlTransactionsPaginated
-  >(GQL_TRANSACTIONS_PAGINATED, {
-    skip: isEmpty(account),
-    variables: {
-      accountId: account!.id,
-      take: DEFAULT_PAGE_SIZE,
-    },
-    fetchPolicy: 'cache-and-network',
-    notifyOnNetworkStatusChange: true,
-    nextFetchPolicy: 'cache-first',
+  const [state, setState] = useState<TransactionsListState>({
+    currentPage: 1,
+    transactionFormModalVisible: false,
   });
 
-  useEffect(() => {
-    if (
-      initialTransactionsListPage === 0 ||
-      initialTransactionsListPage === state.currentPage
-    )
-      return;
+  const {
+    isLoading,
+    error,
+    data: transactionsList,
+    isPreviousData,
+  } = useQuery(
+    queryKeyForAccountTransactionsList(account.id).concat([state.currentPage]),
+    () => listTransactionsApi(account.id, state.currentPage, DEFAULT_PAGE_SIZE),
+    {
+      keepPreviousData: true,
+      useErrorBoundary: false,
+      onError: (e) => setCurrentPage(1),
+    }
+  );
 
-    setCurrentPage(initialTransactionsListPage);
-  }, [initialTransactionsListPage]);
-
-  console.log('transactions list');
-
-  const onPageChange = async (page: number, pageSize?: number) => {
-    const limit = pageSize || DEFAULT_PAGE_SIZE;
-    const skip = skipForPage(page, limit);
-    await fetchMore({ variables: { skip, limit } });
-    setCurrentPage(page);
-  };
-
-  const skipForPage = (page: number, pageSize?: number) => {
-    const limit = pageSize || DEFAULT_PAGE_SIZE;
-    return (page - 1) * limit;
-  };
+  const onPageChange = (page: number) => setCurrentPage(page);
 
   const setCurrentPage = (page: number) => {
     setState((state) => ({ ...state, currentPage: page }));
   };
+
+  const closeModals = (saved = false) => {
+    setState((state) => ({
+      ...state,
+      currentPage: saved ? 1 : state.currentPage,
+      transactionFormModalVisible: false,
+    }));
+  };
+
+  /*
+   * Add Transaction
+   */
+
+  const onSaveTransaction = async (mutationInfo: any) => {
+    await refreshAccount(account.id);
+    closeModals(true);
+  };
+
+  const transactionFormModal = state.transactionFormModalVisible && (
+    <TransactionFormModal
+      onSave={onSaveTransaction}
+      onCancel={closeModals}
+      account={account!}
+    />
+  );
+
+  const openTransactionFormModal = (event: any) => {
+    setState((state) => ({
+      ...state,
+      transactionFormModalVisible: true,
+    }));
+  };
+
+  const addTransactionsButton = isAccountForCurrentUser && (
+    <div className="transactions-list-component__add-transactions">
+      <Button
+        className="transactions-list-component__add-transactions__button"
+        onClick={openTransactionFormModal}
+      >
+        <FontAwesomeIcon icon={faPlus} color="green" />
+        <span>{t('transaction.actions.add')}</span>
+      </Button>
+    </div>
+  );
 
   /*
    * ui
@@ -77,7 +109,8 @@ const TransactionsList = ({
   if (error) showGenericOperationFailedMessage(error, t);
 
   return (
-    <>
+    <div className="transactions-list-component">
+      {addTransactionsButton}
       {error && (
         <Alert message={t('generic.errors.dataIncomplete')} type={'error'} />
       )}
@@ -85,31 +118,29 @@ const TransactionsList = ({
         <List
           key={'transaction_list_paginated'}
           itemLayout="vertical"
-          loading={loading}
+          loading={isLoading}
           pagination={{
             current: state.currentPage,
             onChange: onPageChange,
             pageSize: DEFAULT_PAGE_SIZE,
             defaultPageSize: DEFAULT_PAGE_SIZE,
-            total: account.transactionsCount || 0,
+            total: account.total_transactions_count || 0,
+            disabled: isLoading || isPreviousData,
           }}
-          dataSource={data?.transactions || []}
+          dataSource={transactionsList || []}
           renderItem={(transaction) => (
             <List.Item key={transaction.id} className="transactions-list__item">
               <TransactionCard
                 key={`transaction_card_in_list_for_${transaction.id}`}
                 account={account}
                 transaction={transaction}
-                refreshTransactionsPaginationArgs={{
-                  skip: skipForPage(state.currentPage),
-                  take: DEFAULT_PAGE_SIZE,
-                }}
               />
             </List.Item>
           )}
         />
       </div>
-    </>
+      {transactionFormModal}
+    </div>
   );
 };
 

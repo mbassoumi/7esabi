@@ -59,8 +59,7 @@ export default {
       },
       deleteForm: {
         title: 'Delete Account Group',
-        body:
-          'Are you sure? If you delete an account group, all the accounts inside it and transactions on them will be deleted.',
+        body: 'Are you sure? If you delete an account group, all the accounts inside it and transactions on them will be deleted.',
       },
     },
 
@@ -91,8 +90,7 @@ export default {
       },
       deleteForm: {
         title: 'Delete Account',
-        body:
-          'Are you sure? If you delete this account, the transactions on it will be deleted as well.',
+        body: 'Are you sure? If you delete this account, the transactions on it will be deleted as well.',
       },
       currency: {
         NIS: 'shekel(s)',
@@ -109,8 +107,7 @@ export default {
         canEditColumn: 'Write Access',
         explanation: {
           title: 'Shared Accounts:',
-          body:
-            'Everyone in the list below can see the account and its transactions. However, only the ones with an enabled Edit Access would be able to add transactions to the account.',
+          body: 'Everyone in the list below can see the account and its transactions. However, only the ones with an enabled Edit Access would be able to add transactions to the account.',
         },
       },
       list: {

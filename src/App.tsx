@@ -3,7 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Routes from './Routes';
 
-const App = () => {
+const App = (): any => {
   const { i18n } = useTranslation();
 
   return (

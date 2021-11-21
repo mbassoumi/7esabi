@@ -1,37 +1,37 @@
 import { faHandshake, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Collapse } from 'antd';
-import { isEmpty } from 'lodash';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GqlFragmentAccountGroup } from '../../graphql/gql/client-schema/types/GqlFragmentAccountGroup';
 import AccountCard from '../account/AccountCard';
-import AccountFormModal from '../account/AccountFormModal';
-import { useCurrentUser } from '../helpers/storeHelper';
 import { EntityActionButtons } from '../shared/EntityActionButtons';
-import AccountGroupFormModal from './AccountGroupFormModal';
-import DeleteGroupModal from './DeleteGroupModal';
 import './styles/accountGroupsCollapsible.scss';
-
-interface AccountGroupsCollapsibleProps {}
+import { AccountGroup } from '../../@types/AccountGroup';
+import DeleteGroupModal from './DeleteGroupModal';
+import AccountGroupFormModal from './AccountGroupFormModal';
+import {
+  getCachedAccountGroups,
+  refreshAccountGroups,
+} from '../helpers/storeHelper';
+import AccountFormModal from '../account/AccountFormModal';
 
 interface AccountGroupsCollapsibleState {
-  selectedAccountGroup: GqlFragmentAccountGroup | null;
+  selectedAccountGroup: AccountGroup | null;
   accountFormModalVisible: boolean;
   accountGroupFormModalVisible: boolean;
   deleteAccountGroupModalVisible: boolean;
 }
 
-const AccountGroupsCollapsible = ({}: AccountGroupsCollapsibleProps) => {
+const AccountGroupsCollapsible = ({}) => {
   const { t } = useTranslation();
-  const currentUser = useCurrentUser();
+  const accountGroups = getCachedAccountGroups();
 
-  const [state, setState] = useState({
+  const [state, setState] = useState<AccountGroupsCollapsibleState>({
     selectedAccountGroup: null,
     accountFormModalVisible: false,
     accountGroupFormModalVisible: false,
     deleteAccountGroupModalVisible: false,
-  } as AccountGroupsCollapsibleState);
+  });
 
   const closeModals = () => {
     setState({} as any);
@@ -41,21 +41,20 @@ const AccountGroupsCollapsible = ({}: AccountGroupsCollapsibleProps) => {
    * Add Account Modal
    */
 
-  const onSaveAccount = (mutationInfo: any) => {
+  const onSaveAccount = async (_mutationInfo: any) => {
+    await refreshAccountGroups();
     closeModals();
   };
 
   const accountFormModal = state.accountFormModalVisible && (
     <AccountFormModal
+      accountGroup={state.selectedAccountGroup!}
       onSave={onSaveAccount}
       onCancel={closeModals}
-      updateMode={false}
-      accountGroup={state.selectedAccountGroup!}
-      allAccountGroups={currentUser?.accountGroups! as any}
     />
   );
 
-  const openAccountFormModal = (accountGroup: GqlFragmentAccountGroup) => {
+  const openAccountFormModal = (accountGroup: AccountGroup) => {
     setState((state) => ({
       ...state,
       selectedAccountGroup: accountGroup,
@@ -67,19 +66,19 @@ const AccountGroupsCollapsible = ({}: AccountGroupsCollapsibleProps) => {
    * Update Account Group Modal
    */
   const onSaveAccountGroup = async (mutationInfo: any) => {
+    await refreshAccountGroups();
     closeModals();
   };
 
   const accountGroupFormModal = state.accountGroupFormModalVisible && (
     <AccountGroupFormModal
-      updateMode={!isEmpty(state.selectedAccountGroup)}
       accountGroup={state.selectedAccountGroup}
       onSave={onSaveAccountGroup}
       onCancel={closeModals}
     />
   );
 
-  const openAccountGroupFormModal = (accountGroup: GqlFragmentAccountGroup) => {
+  const openAccountGroupFormModal = (accountGroup: AccountGroup) => {
     setState((state) => ({
       ...state,
       selectedAccountGroup: accountGroup,
@@ -90,7 +89,8 @@ const AccountGroupsCollapsible = ({}: AccountGroupsCollapsibleProps) => {
   /*
    *  Delete Account Group Modal
    */
-  const onDeleteAccountGroup = async (mutationInfo: any) => {
+  const onDeleteAccountGroup = async () => {
+    await refreshAccountGroups();
     closeModals();
   };
 
@@ -102,7 +102,7 @@ const AccountGroupsCollapsible = ({}: AccountGroupsCollapsibleProps) => {
     />
   );
 
-  const openDeleteGroupModal = (accountGroup: GqlFragmentAccountGroup) => {
+  const openDeleteGroupModal = (accountGroup: AccountGroup) => {
     setState((state) => ({
       ...state,
       selectedAccountGroup: accountGroup,
@@ -110,12 +110,10 @@ const AccountGroupsCollapsible = ({}: AccountGroupsCollapsibleProps) => {
     }));
   };
 
-  console.log('roooooooooonder');
-
   /*
    * Add Account Button
    */
-  const addAccountButton = (accountGroup: GqlFragmentAccountGroup) => (
+  const addAccountButton = (accountGroup: AccountGroup) => (
     <div className="account-groups-collapsible__add-account">
       <Button
         className="account-groups-collapsible__add-account__button"
@@ -131,14 +129,16 @@ const AccountGroupsCollapsible = ({}: AccountGroupsCollapsibleProps) => {
    * other ui components
    */
 
-  const accountGroupCollapsePanel = (
-    accountGroup: GqlFragmentAccountGroup,
-    isSharedGroup = false
-  ) => {
+  const accountGroupCollapsePanel = (accountGroup: AccountGroup) => {
+    const isSharedGroup = accountGroup.name === 'shared_with_me';
+    const accountGroupName = isSharedGroup
+      ? t('dashboard.sharedWithMeGroup')
+      : accountGroup.name;
+
     return (
       <Collapse.Panel
         key={accountGroup.id}
-        header={accountGroup.name}
+        header={accountGroupName}
         className="account-groups-collapsible__panel"
         extra={
           !isSharedGroup ? (
@@ -160,7 +160,7 @@ const AccountGroupsCollapsible = ({}: AccountGroupsCollapsibleProps) => {
               key={`account_${account.id}_card`}
               className="account-groups-collapsible__item"
             >
-              <AccountCard account={account} accountGroup={accountGroup} />
+              <AccountCard account={account} />
             </div>
           );
         })}
@@ -168,30 +168,19 @@ const AccountGroupsCollapsible = ({}: AccountGroupsCollapsibleProps) => {
     );
   };
 
-  const sharedWithMeGroup = () => {
-    const sharedAccounts =
-      currentUser!.accountPermissions?.map(
-        (accountPermission) => accountPermission.account
-      ) || [];
-    const accountGroup: GqlFragmentAccountGroup = {
-      __typename: 'AccountGroup',
-      id: 'external_accounts',
-      name: t('dashboard.sharedWithMeGroup'),
-      accounts: sharedAccounts,
-    };
-    return accountGroupCollapsePanel(accountGroup, true);
-  };
-
   return (
     <>
       {accountFormModal}
       {accountGroupFormModal}
       {deleteAccountGroupModal}
-      <Collapse defaultActiveKey={[1]} className="account-groups-collapsible">
-        {currentUser!.accountGroups?.map((accountGroup) =>
+      <Collapse
+        defaultActiveKey={[1]}
+        className="account-groups-collapsible"
+        key="0-1"
+      >
+        {accountGroups?.map((accountGroup) =>
           accountGroupCollapsePanel(accountGroup)
         )}
-        {sharedWithMeGroup()}
       </Collapse>
     </>
   );

@@ -1,6 +1,21 @@
-.transactions-list {
+.transactions-list-component {
+  &__add-transactions {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    margin-top: -50px;
+    margin-bottom: 20px;
 
-  &__item {
-    padding: 0px;
+    &__button {
+      border-radius: 20px;
+      width: 150px;
+      box-shadow: 0px 2px 4px;
+    }
+  }
+
+  .transactions-list {
+    &__item {
+      padding: 0px;
+    }
   }
 }

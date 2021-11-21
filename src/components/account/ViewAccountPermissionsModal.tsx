@@ -1,37 +1,35 @@
 import { Button, Modal } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GqlFragmentAccount_permissions } from '../../graphql/gql/client-schema/types/GqlFragmentAccount';
-import { AccountPermissionInput } from '../../graphql/gql/globalTypes';
-import { convertToAccountPermissionsInput } from '../../graphql/utils/typeHelpers';
 import './styles/accountForm.scss';
 import AccountPermissionsForm from './AccountPermissionsForm';
+import { AccountPermission } from '../../@types/AccountPermission';
+import { AccountPermissionParams } from '../../api/account';
+import { initAccountPermissionParamsList } from '../../utils/helpers';
 
 interface ViewAccountPermissionsModalProps {
-  accountPermissions: GqlFragmentAccount_permissions[];
+  accountPermissions: AccountPermission[];
   onOk: () => any;
 }
 
 interface ViewAccountPermissionsModalState {
-  accountPermissionInputs: AccountPermissionInput[];
+  accountPermissionParamsList: AccountPermissionParams[];
 }
 
 const ViewAccountPermissionsModal = ({
-  accountPermissions,
+  accountPermissions = [],
   onOk,
 }: ViewAccountPermissionsModalProps) => {
   const { t } = useTranslation();
 
-  const [state, setState] = useState({
-    accountPermissionInputs: [],
-  } as ViewAccountPermissionsModalState);
+  const [state, setState] = useState<ViewAccountPermissionsModalState>({
+    accountPermissionParamsList: [],
+  });
 
   useEffect(() => {
     setState({
-      accountPermissionInputs:
-        accountPermissions?.map((accountPermission) =>
-          convertToAccountPermissionsInput(accountPermission)
-        ) || [],
+      accountPermissionParamsList:
+        initAccountPermissionParamsList(accountPermissions),
     });
   }, [accountPermissions]);
 
@@ -53,7 +51,7 @@ const ViewAccountPermissionsModal = ({
     >
       <div className="account-form__input">
         <AccountPermissionsForm
-          accountPermissions={state.accountPermissionInputs}
+          accountPermissionParamsList={state.accountPermissionParamsList}
         />
       </div>
     </Modal>

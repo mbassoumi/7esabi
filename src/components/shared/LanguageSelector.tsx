@@ -1,20 +1,19 @@
 import { LoadingOutlined } from '@ant-design/icons';
-import { useMutation } from '@apollo/client';
 import { Select, Spin } from 'antd';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LocaleCode, UserProfileInput } from '../../graphql/gql/globalTypes';
-import { GqlUpdateUserProfile } from '../../graphql/gql/user/types/GqlUpdateUserProfile';
-import { GQL_UPDATE_USER_PROFILE } from '../../graphql/gql/user/update';
-import { showGenericOperationFailedMessage } from '../../graphql/utils/errorsHelper';
-import { useCurrentUser } from '../helpers/storeHelper';
 import './styles/languageSelector.scss';
+import { LocaleCode } from '../../@types/enums';
+import { getCachedCurrentUser } from '../helpers/storeHelper';
+import { useMutation } from 'react-query';
+import { updateUserApi } from '../../api/user';
+import { showGenericOperationFailedMessage } from '../../utils/helpers';
 
 interface LanguageSelectorProps {
   setLoading?: (loading: boolean) => any;
 }
 
-const getLocalFromCode = (localeCode: LocaleCode) => {
+const getLocaleFromCode = (localeCode: LocaleCode) => {
   return localeCode?.toLowerCase();
 };
 
@@ -24,35 +23,28 @@ const getCodeForLocale = (locale: string) => {
 
 const LanguageSelector = ({ setLoading }: LanguageSelectorProps) => {
   const { i18n, t } = useTranslation();
-  const currentUser = useCurrentUser();
+  const currentUser = getCachedCurrentUser();
 
-  const [updateUserProfileFn, { loading }] = useMutation<GqlUpdateUserProfile>(
-    GQL_UPDATE_USER_PROFILE
+  const updateUserMutation = useMutation((locale: LocaleCode) =>
+    updateUserApi(currentUser.id, { locale })
   );
 
   useEffect(() => {
     const locale =
-      currentUser?.profile?.locale || getCodeForLocale(i18n.language || 'en');
-    console.log('localeeeee', locale, currentUser);
+      currentUser?.locale || getCodeForLocale(i18n.language || 'en');
     setLocale(locale);
   }, [currentUser]);
 
   const setLocale = (localeCode: LocaleCode) => {
-    console.log('rrrrrrrr', localeCode, currentUser);
-    i18n.changeLanguage(getLocalFromCode(localeCode));
+    i18n.changeLanguage(getLocaleFromCode(localeCode));
   };
 
   const onChange = async (selectedLocale: LocaleCode) => {
     if (currentUser) {
-      const userProfileInput: UserProfileInput = {
-        id: currentUser.id,
-        locale: selectedLocale,
-      };
-
       try {
         if (setLoading) setLoading(true);
 
-        await updateUserProfileFn({ variables: { data: userProfileInput } });
+        await updateUserMutation.mutateAsync(selectedLocale);
 
         if (setLoading) setLoading(false);
       } catch (e) {
@@ -64,7 +56,7 @@ const LanguageSelector = ({ setLoading }: LanguageSelectorProps) => {
     setLocale(selectedLocale);
   };
 
-  if (currentUser && loading) {
+  if (currentUser && updateUserMutation.isLoading) {
     return (
       <div className="language-selector__button">
         <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />

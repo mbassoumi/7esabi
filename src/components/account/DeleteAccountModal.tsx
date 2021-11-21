@@ -1,20 +1,20 @@
-import { useMutation } from '@apollo/client';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { message, Modal } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { GQL_DELETE_ACCOUNT } from '../../graphql/gql/account/delete';
-import { GqlDeleteAccount } from '../../graphql/gql/account/types/GqlDeleteAccount';
-import { GqlFragmentAccount } from '../../graphql/gql/client-schema/types/GqlFragmentAccount';
 import {
   DEFAULT_ERROR_MESSAGE_DURATION,
   DEFAULT_SUCCESS_MESSAGE_DURATION,
 } from '../../utils/appVars';
 import FormModalFooter from '../shared/FormModalFooter';
+import { Account } from '../../@types/Account';
+import { useMutation } from 'react-query';
+import { deleteAccountApi } from '../../api/account';
+import { accountFullName } from '../../utils/helpers';
 
 interface DeleteAccountModalProps {
-  account: GqlFragmentAccount;
+  account: Account;
   onDelete: (mutationInfo: any) => any;
   onCancel: (event: any) => any;
 }
@@ -26,24 +26,22 @@ const DeleteAccountModal = ({
 }: DeleteAccountModalProps) => {
   const { t } = useTranslation();
 
-  const [deleteAccountFn, deleteAccountMutationInfo] = useMutation<
-    GqlDeleteAccount
-  >(GQL_DELETE_ACCOUNT);
+  const deleteAccountMutation = useMutation(async () =>
+    deleteAccountApi(account.id, account.account_group.id)
+  );
 
   const onDeleteClick = async (event: any) => {
     event.stopPropagation();
 
     try {
-      const data = await deleteAccountFn({
-        variables: { id: account!.id },
-      });
+      const data = await deleteAccountMutation.mutateAsync();
 
       message.success(
         t(`generic.messages.success`),
         DEFAULT_SUCCESS_MESSAGE_DURATION
       );
 
-      onDelete(data);
+      await onDelete(data);
     } catch (error) {
       console.log('error', error);
       message.error(
@@ -68,7 +66,7 @@ const DeleteAccountModal = ({
             color="red"
             style={{ marginLeft: '3px', marginRight: '3px', fontSize: '20px' }}
           />
-          {`${t('account.deleteForm.title')} : ${account.fullName}`}
+          {`${t('account.deleteForm.title')} : ${accountFullName(account)}`}
         </span>
       }
       onCancel={onCancelClick}
@@ -76,7 +74,7 @@ const DeleteAccountModal = ({
         <FormModalFooter
           onSaveOrDeleteClick={onDeleteClick}
           onCancelClick={onCancelClick}
-          loading={deleteAccountMutationInfo.loading}
+          loading={deleteAccountMutation.isLoading}
           disabled={false}
           isForDelete={true}
         />

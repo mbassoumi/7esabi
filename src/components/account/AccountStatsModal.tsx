@@ -1,15 +1,16 @@
 import { Alert, Button, Modal, Select } from 'antd';
 import axios from 'axios';
-import { concat, flatten, isEmpty, reverse, sortBy } from 'lodash';
+import { flatten, isEmpty, reverse, sortBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PieChart } from 'react-minimal-pie-chart';
-import { GqlSessionDataQuery_sessionData_user } from '../../graphql/gql/auth/types/GqlSessionDataQuery';
-import { GqlFragmentAccount } from '../../graphql/gql/client-schema/types/GqlFragmentAccount';
-import { Currency } from '../../graphql/gql/globalTypes';
-import { useCurrentUser } from '../helpers/storeHelper';
-import CurrencySelector from '../shared/currencySelector';
 import './styles/accountStatsModal.scss';
+import { Account } from '../../@types/Account';
+import { Currency } from '../../@types/enums';
+import { AccountGroup } from '../../@types/AccountGroup';
+import { getCachedAccountGroups } from '../helpers/storeHelper';
+import { accountFullName } from '../../utils/helpers';
+import CurrencySelector from '../shared/CurrencySelector';
 
 const COLORS = [
   '#0088FE',
@@ -31,24 +32,14 @@ interface AccountStatsModalProps {
 }
 
 interface AccountStatsModalState {
-  selectedAccounts: GqlFragmentAccount[];
+  selectedAccounts: Account[];
   selectedCurrency: Currency;
-  accountConversions: any;
+  accountConversions: Record<number, { conversions: any }>;
   conversionApiIsDown: boolean;
 }
 
-const extractAllAccounts = (user: GqlSessionDataQuery_sessionData_user) => {
-  const ownedAccounts = flatten(
-    user.accountGroups?.map((accountGroup) => accountGroup.accounts) || []
-  );
-
-  const externalAccounts =
-    user.accountPermissions?.map(
-      (accountPermission) => accountPermission.account
-    ) || [];
-
-  return concat(ownedAccounts, externalAccounts);
-};
+const extractAllAccounts = (accountGroups: AccountGroup[]) =>
+  flatten(accountGroups?.map((accountGroup) => accountGroup.accounts) || []);
 
 const currencyFormalCode = (currency: Currency) => {
   if (currency == Currency.USD || currency == Currency.JOD) return currency;
@@ -60,27 +51,29 @@ const currencyFormalCode = (currency: Currency) => {
 
 const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
   const { t } = useTranslation();
-  const currentUser = useCurrentUser()!;
-  const allAccounts = extractAllAccounts(currentUser);
+  const accountGroups = getCachedAccountGroups()!;
+  const allAccounts = extractAllAccounts(accountGroups);
 
-  const [state, setState] = useState({
+  const [state, setState] = useState<AccountStatsModalState>({
     selectedAccounts: [],
     selectedCurrency: Currency.USD,
     accountConversions: {},
     conversionApiIsDown: false,
-  } as AccountStatsModalState);
+  });
 
   useEffect(() => {
     updateAccountConversions();
   }, [state.selectedAccounts, state.selectedCurrency]);
 
-  const onSelectedAccountsChange = (selectedAccountIdsOrNames: string[]) => {
+  const onSelectedAccountsChange = (
+    selectedAccountIdsOrNames: (string | number)[]
+  ) => {
     setState((state) => ({
       ...state,
       selectedAccounts: allAccounts.filter(
         (account) =>
           selectedAccountIdsOrNames.includes(account!.id) ||
-          selectedAccountIdsOrNames.includes(account!.fullName)
+          selectedAccountIdsOrNames.includes(accountFullName(account!))
       ) as any,
     }));
   };
@@ -93,11 +86,11 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
   };
 
   const updateAccountConversions = () => {
-    for (let account of state.selectedAccounts! || []) {
-      if (account.currency == state.selectedCurrency || account.amount == 0)
+    for (const account of state.selectedAccounts || []) {
+      if (account.currency == state.selectedCurrency || account.balance == 0)
         continue;
 
-      const convertedAmount = getConvertedAmount(account);
+      const convertedAmount = getConvertedBalance(account);
       if (!convertedAmount) {
         const srcCurrency = currencyFormalCode(account.currency);
         const destCurrency = currencyFormalCode(state.selectedCurrency);
@@ -109,9 +102,13 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
           .then((res) => {
             const conversionRatio = res.data && res.data[queryParam];
             const convertedAmount = conversionRatio
-              ? account.amount! * conversionRatio
+              ? account.balance * conversionRatio
               : -1;
-            updateSelectedAccountAmount(account, destCurrency, convertedAmount);
+            updateSelectedAccountBalance(
+              account,
+              destCurrency,
+              convertedAmount
+            );
           })
           .catch((error) => {
             console.log(error);
@@ -124,7 +121,7 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
     }
   };
 
-  const updateSelectedAccountAmount = (
+  const updateSelectedAccountBalance = (
     account: any,
     currencyCode: string,
     amount: number
@@ -147,17 +144,18 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
     });
   };
 
-  const getConvertedAmount = (account: any) => {
-    const convertedAccount =
-      state.accountConversions[account.id] || ({ conversions: {} } as any);
+  const getConvertedBalance = (account: any) => {
+    const convertedAccount = state.accountConversions[account.id] || {
+      conversions: {},
+    };
     return convertedAccount.conversions[
       currencyFormalCode(state.selectedCurrency)
     ];
   };
 
-  const creditAccounts: GqlFragmentAccount[] = [];
-  const debitAccounts: GqlFragmentAccount[] = [];
-  let chartData: any = [];
+  const creditAccounts: Account[] = [];
+  const debitAccounts: Account[] = [];
+  const chartData: any = [];
 
   const onOkClick = async (event: any) => {
     event.stopPropagation();
@@ -194,29 +192,29 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
     );
   };
 
-  const detailsList = (dataList: GqlFragmentAccount[], amount: number) => {
+  const detailsList = (dataList: Account[], balance: number) => {
     return (
       <div className="account-stats-modal__details-list">
         <div>
-          {amount >= 0
+          {balance >= 0
             ? t('account.card.participation')
             : t('account.card.debits')}
           :
         </div>
         <ul>
-          {reverse(sortBy(dataList, ['amount'])).map((account) => {
+          {reverse(sortBy(dataList, ['balance'])).map((account) => {
             const convertedAmount =
               account.currency == state.selectedCurrency
                 ? ''
                 : `- (${Number(
-                    getConvertedAmount(account) || 0
+                    getConvertedBalance(account) || 0
                   ).toLocaleString()} ${t(
                     `account.currency.${state.selectedCurrency}`
                   )})`;
             return (
               <li key={account.id}>
-                {`${account.fullName}: (${Number(
-                  account.amount
+                {`${accountFullName(account)}: (${Number(
+                  account.balance
                 ).toLocaleString()} ${t(
                   `account.currency.${account.currency}`
                 )}) ${convertedAmount}`}
@@ -230,8 +228,8 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
 
   const modalContent = () => {
     let totalCreditAmounts = 0;
-    for (let account of state.selectedAccounts! || []) {
-      const convertedAmount = getConvertedAmount(account) || account.amount;
+    for (const account of state.selectedAccounts! || []) {
+      const convertedAmount = getConvertedBalance(account) || account.balance;
       if (convertedAmount >= 0) {
         totalCreditAmounts = totalCreditAmounts + convertedAmount;
         creditAccounts.push(account);
@@ -251,11 +249,11 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
     let insignificantAmounts = 0;
     let index = 0;
     const significantAmountThreshold = totalCreditAmounts * 0.03;
-    for (let account of creditAccounts) {
-      const convertedAmount = getConvertedAmount(account) || account.amount;
+    for (const account of creditAccounts) {
+      const convertedAmount = getConvertedBalance(account) || account.balance;
       if (convertedAmount! >= significantAmountThreshold) {
         chartData.push({
-          title: account.fullName,
+          title: accountFullName(account),
           value: convertedAmount,
           color: COLORS[index % COLORS.length],
         });
@@ -315,16 +313,18 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
         <Select
           mode="multiple"
           placeholder={t('stats.selectAccountsPlaceholder')}
-          value={state.selectedAccounts.map((account) => account.fullName)}
+          value={state.selectedAccounts.map((account) =>
+            accountFullName(account)
+          )}
           onChange={onSelectedAccountsChange}
           style={{ width: '100%' }}
         >
-          {filteredOptions.map((account: GqlFragmentAccount) => (
+          {filteredOptions.map((account: Account) => (
             <Select.Option
               key={`stats_all_accounts_selector_${account.id}`}
               value={account.id}
             >
-              {account.fullName}
+              {accountFullName(account)}
             </Select.Option>
           ))}
         </Select>

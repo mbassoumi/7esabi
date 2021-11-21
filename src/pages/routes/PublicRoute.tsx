@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, RouteProps } from 'react-router-dom';
-import LanguageSelector from '../../components/shared/LanguageSelector';
 import '../styles/publicPage.scss';
+import LanguageSelector from '../../components/shared/LanguageSelector';
 
 const PublicRoute = ({ component: Component, ...rest }: RouteProps) => {
   return (

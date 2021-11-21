@@ -1,200 +1,139 @@
-import { useMutation } from '@apollo/client';
-import { Divider, Input, message, Modal, Select } from 'antd';
-import { concat, find, isEmpty, pull } from 'lodash';
+import { Divider, Input, message, Modal } from 'antd';
+import { isEmpty, remove } from 'lodash';
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GQL_ADD_ACCOUNT } from '../../graphql/gql/account/add';
-import { GqlAddAccount } from '../../graphql/gql/account/types/GqlAddAccount';
-import { GqlUpdateAccount } from '../../graphql/gql/account/types/GqlUpdateAccount';
-import { GQL_UPDATE_ACCOUNT } from '../../graphql/gql/account/update';
-import { GqlFragmentAccount } from '../../graphql/gql/client-schema/types/GqlFragmentAccount';
-import { GqlFragmentAccountGroup } from '../../graphql/gql/client-schema/types/GqlFragmentAccountGroup';
-import {
-  AccountGroupInput,
-  AccountInput,
-  AccountPermissionInput,
-  Currency,
-} from '../../graphql/gql/globalTypes';
-import {
-  convertToAccountGroupInput,
-  convertToAccountPermissionsInput,
-} from '../../graphql/utils/typeHelpers';
 import {
   DEFAULT_ERROR_MESSAGE_DURATION,
   DEFAULT_SUCCESS_MESSAGE_DURATION,
 } from '../../utils/appVars';
-import CurrencySelector from '../shared/currencySelector';
 import FormModalFooter from '../shared/FormModalFooter';
-import AccountPermissionsForm from './AccountPermissionsForm';
 import './styles/accountForm.scss';
+import { AccountGroup } from '../../@types/AccountGroup';
+import { Account } from '../../@types/Account';
+import { useMutation } from 'react-query';
+import {
+  AccountParams,
+  AccountPermissionParams,
+  createAccountApi,
+  updateAccountApi,
+} from '../../api/account';
+import { Currency } from '../../@types/enums';
+import CurrencySelector from '../shared/CurrencySelector';
+import AccountPermissionsForm from './AccountPermissionsForm';
+import { initAccountParams } from '../../utils/helpers';
 
 interface AccountFormModalProps {
+  accountGroup: AccountGroup;
   onSave: (mutationInfo: any) => any;
   onCancel: () => any;
-  updateMode?: boolean;
-  allAccountGroups: GqlFragmentAccountGroup[];
-  account?: GqlFragmentAccount;
-  accountGroup?: GqlFragmentAccountGroup | null;
-  disableAccountSelection?: boolean;
+  account?: Account;
 }
 
 interface AccountFormModalState {
-  accountInput: AccountInput;
-  allAccountGroupInputs: AccountGroupInput[];
+  accountParams: AccountParams;
 }
 
 const AccountFormModal = ({
+  accountGroup,
   onSave,
   onCancel,
-  updateMode = false,
-  allAccountGroups,
   account,
-  accountGroup,
-  disableAccountSelection = false,
 }: AccountFormModalProps) => {
   const { t } = useTranslation();
+  const updateMode = !isEmpty(account);
 
-  const [addAccountFn, addAccountMutationInfo] = useMutation<GqlAddAccount>(
-    GQL_ADD_ACCOUNT
+  const createAccountMutation = useMutation((state: AccountFormModalState) =>
+    createAccountApi(accountGroup.id, state.accountParams)
   );
 
-  const [updateAccountFn, updateAccountMutationInfo] = useMutation<
-    GqlUpdateAccount
-  >(GQL_UPDATE_ACCOUNT);
+  const updateAccountMutation = useMutation(
+    async (state: AccountFormModalState) =>
+      updateAccountApi(account!.id, accountGroup.id, state.accountParams)
+  );
 
-  const [state, setState] = useState({
-    accountInput: {
-      accountGroup: {} as any,
-      currency: Currency.USD,
-      permissions: [],
-    } as any,
-    allAccountGroupInputs: [],
-  } as AccountFormModalState);
+  const [state, setState] = useState<AccountFormModalState>({
+    accountParams: initAccountParams(),
+  });
 
   useEffect(() => {
-    setState({
-      accountInput: buildAccountInput(),
-      allAccountGroupInputs: allAccountGroups.map((accountGroup) =>
-        convertToAccountGroupInput(accountGroup)
-      ),
-    });
-  }, [account, allAccountGroups]);
+    if (account) {
+      setState({ accountParams: initAccountParams(account) });
+    }
+  }, [account]);
 
   /*
    * Helpers
    */
-  const buildAccountInput = (): AccountInput => ({
-    id: account?.id,
-    name: account?.name || '',
-    currency: account?.currency || Currency.USD,
-    accountGroup: convertToAccountGroupInput(accountGroup),
-    permissions:
-      account?.permissions?.map((accountPermission) =>
-        convertToAccountPermissionsInput(accountPermission)
-      ) || [],
-  });
-
-  const isAccountInputValid = (accountInput: AccountInput) => {
+  const isAccountInputValid = (accountInput: AccountParams) => {
     return (
+      accountInput &&
       !isEmpty(accountInput) &&
       !isEmpty(accountInput.name) &&
-      !isEmpty(accountInput.currency) &&
-      !isEmpty(accountInput.accountGroup)
+      !isEmpty(accountInput.currency)
     );
   };
 
   /*
    * Actions and event handlers
    */
-  const onAccountAttributeChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const onAccountInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const fieldName = e.target.name;
     const fieldValue = e.target.value;
-    setState((state: any) => ({
+    setState((state) => ({
       ...state,
-      accountInput: { ...state.accountInput, [fieldName]: fieldValue },
-    }));
-  };
-
-  const onAccountGroupSelectChange = (groupId: string) => {
-    const selectedAccountGroup =
-      find(state.allAccountGroupInputs, {
-        id: groupId,
-      }) || {};
-    setState((state: any) => ({
-      ...state,
-      accountInput: {
-        ...state.accountInput,
-        accountGroup: selectedAccountGroup,
-      },
+      accountParams: {
+        ...state.accountParams,
+        [fieldName]: fieldValue,
+      } as AccountParams,
     }));
   };
 
   const onCurrencySelectChange = (selectValue: string) => {
-    setState((state: any) => ({
+    setState((state) => ({
       ...state,
-      accountInput: {
-        ...state.accountInput,
+      accountParams: {
+        ...state.accountParams,
         currency: (Currency as any)[selectValue],
-      },
+      } as AccountParams,
     }));
   };
 
-  const updateAccountPermissionInput = (
-    userId: string,
-    updatedAccountPermissionInput: AccountPermissionInput | null
+  const createOrDeletePermission = (
+    accountPermissionParams: AccountPermissionParams,
+    deleted?: boolean
   ) => {
-    const accountPermissionInputs = concat(
-      state.accountInput.permissions,
-      []
-    )! as AccountPermissionInput[];
-    const oldAccountPermissionInput = find(accountPermissionInputs, {
-      userId,
-    });
+    setState((state) => {
+      const newState = { ...state };
 
-    if (oldAccountPermissionInput) {
-      if (updatedAccountPermissionInput) {
-        // it's an update
-        oldAccountPermissionInput.canEdit =
-          updatedAccountPermissionInput.canEdit;
+      if (deleted) {
+        // removed permission
+        remove(
+          newState.accountParams.permissions,
+          (permissionParams) =>
+            permissionParams.user_id === accountPermissionParams.user_id
+        );
       } else {
-        /// it's a new user
-        pull(accountPermissionInputs, oldAccountPermissionInput);
+        // new permission
+        newState.accountParams.permissions.push(accountPermissionParams);
       }
-    } else {
-      // it's a removed user
-      accountPermissionInputs.push({
-        userId,
-        canEdit: updatedAccountPermissionInput!.canEdit,
-      });
-    }
-
-    setState((state) => ({
-      ...state,
-      accountInput: {
-        ...state.accountInput,
-        permissions: accountPermissionInputs || [],
-      },
-    }));
+      console.log(`new stateee`, newState);
+      return newState;
+    });
   };
 
   const onSaveClick = async (event: any) => {
     event.stopPropagation();
 
-    const saveFn = updateMode ? updateAccountFn : addAccountFn;
+    const saveFn = updateMode ? updateAccountMutation : createAccountMutation;
     try {
-      await saveFn({
-        variables: { data: state.accountInput },
-      });
+      const mutationResponse = await saveFn.mutateAsync(state);
 
       message.success(
         t(`generic.messages.success`),
         DEFAULT_SUCCESS_MESSAGE_DURATION
       );
 
-      const mutationInfo = updateMode
-        ? updateAccountMutationInfo.loading
-        : addAccountMutationInfo.loading;
-      onSave(mutationInfo);
+      await onSave(mutationResponse);
     } catch (error) {
       console.log('error', error);
       message.error(
@@ -209,39 +148,16 @@ const AccountFormModal = ({
     onCancel();
   };
 
-  console.log('rendeeeer');
-
   /*
    * UI parts
    */
-  const accountGroupSelector = () => (
-    <Select
-      showSearch
-      allowClear
-      size="large"
-      className="account-form__input__select"
-      placeholder={t('account.form.selectGroupName')}
-      disabled={disableAccountSelection}
-      value={`${state.accountInput.accountGroup.name}`}
-      onSelect={onAccountGroupSelectChange}
-      filterOption={(input, option) =>
-        option?.children?.toLowerCase().indexOf(input) > 0
-      }
-    >
-      {state.allAccountGroupInputs?.map((accountGroupInput, index) => (
-        <Select.Option
-          key={`all_groups_select_${accountGroupInput.id}`}
-          value={accountGroupInput.id!}
-        >
-          {accountGroupInput.name}
-        </Select.Option>
-      ))}
-    </Select>
+  const accountGroupInput = () => (
+    <Input name="name" value={accountGroup.name} disabled={true} size="large" />
   );
 
   const currencySelector = () => (
     <CurrencySelector
-      selectedCurrency={state.accountInput.currency}
+      selectedCurrency={state.accountParams!.currency}
       onCurrencySelectChange={onCurrencySelectChange}
     />
   );
@@ -263,30 +179,30 @@ const AccountFormModal = ({
           onCancelClick={onCancelClick}
           loading={
             updateMode
-              ? updateAccountMutationInfo.loading
-              : addAccountMutationInfo.loading
+              ? updateAccountMutation.isLoading
+              : createAccountMutation.isLoading
           }
-          disabled={!isAccountInputValid(state.accountInput)}
+          disabled={!isAccountInputValid(state?.accountParams)}
         />
       }
     >
       <div className="account-form__input__container">
-        <div className="account-form__input">{accountGroupSelector()}</div>
-        <div className="account-form__input">{currencySelector()}</div>
+        <div className="account-form__input">{accountGroupInput()}</div>
         <div className="account-form__input">
           <Input
             name="name"
-            value={state.accountInput.name}
-            onChange={onAccountAttributeChange}
+            value={state.accountParams.name}
+            onChange={onAccountInputChange}
             size="large"
             placeholder={t('account.form.inputAccountName')}
           />
         </div>
+        <div className="account-form__input">{currencySelector()}</div>
         <Divider>{t('account.form.permissionsSectionHeader')}</Divider>
         <div className="account-form__input">
           <AccountPermissionsForm
-            accountPermissions={state.accountInput.permissions!}
-            updateAccountPermission={updateAccountPermissionInput}
+            accountPermissionParamsList={state.accountParams.permissions}
+            createOrDeletePermission={createOrDeletePermission}
             editMode
           />
         </div>

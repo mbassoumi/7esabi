@@ -1,14 +1,19 @@
-import { useQuery } from '@apollo/client';
 import React, { useState } from 'react';
 import { Route, RouteComponentProps, RouteProps } from 'react-router-dom';
-import { SESSION_DATA_QUERY } from '../../graphql/gql/auth/sessionData';
-import { GqlSessionDataQuery } from '../../graphql/gql/auth/types/GqlSessionDataQuery';
-import { handleApolloError } from '../../graphql/utils/errorsHelper';
-import UserSessionMenu from '../../components/shared/userSessionMenu';
+import UserSessionMenu from '../../components/shared/UserSessionMenu';
 import Header from '../../components/shared/Header';
-import LanguageSelector from '../../components/shared/LanguageSelector';
-import LoadingPageComponent from '../../components/shared/LoadingPageComponent';
+import LoadingPage from '../../components/shared/LoadingPage';
 import '../styles/privatePage.scss';
+import { User } from '../../@types/User';
+import { useQuery } from 'react-query';
+import { getCurrentUserApi } from '../../api/session';
+import {
+  queryKeyForAllUsers,
+  queryKeyForCurrentUser,
+} from '../../components/helpers/storeHelper';
+import { listUsersApi } from '../../api/user';
+import { isEmpty } from 'lodash';
+import LanguageSelector from '../../components/shared/LanguageSelector';
 
 // to be used by the the entry page which is wrapped inside this page
 export interface PrivateRouteProps extends RouteComponentProps {
@@ -25,14 +30,26 @@ const PrivateRoute = ({
   location,
   ...rest
 }: RouteProps) => {
-  const { loading, error } = useQuery<GqlSessionDataQuery>(SESSION_DATA_QUERY);
-  const [state, setState] = useState({
+  const { isLoading, data: currentUser } = useQuery<User>(
+    queryKeyForCurrentUser(),
+    getCurrentUserApi
+  );
+
+  // preload all users list
+  const { isLoading: isLoading2, data: allUsers } = useQuery<User[]>(
+    queryKeyForAllUsers(),
+    listUsersApi,
+    {
+      enabled: !isLoading && !isEmpty(currentUser),
+    }
+  );
+
+  const [state, setState] = useState<PrivateRouteState>({
     headerTitle: '',
     forcedLoading: false,
-  } as PrivateRouteState);
+  });
 
-  if (loading || state.forcedLoading) return <LoadingPageComponent />;
-  if (error) return handleApolloError(error);
+  if (isLoading || state.forcedLoading) return <LoadingPage />;
 
   const updateHeaderTitle = (title: string) => {
     setState((state) => ({
@@ -47,18 +64,20 @@ const PrivateRoute = ({
 
   return (
     <>
-      <Route
-        {...rest}
-        render={(props) => (
-          <div className="private-page">
-            <Header title={state.headerTitle} actions={<UserSessionMenu />} />
-            {
-              // @ts-ignore
-              <Component {...props} updateHeaderTitle={updateHeaderTitle} />
-            }
-          </div>
-        )}
-      />
+      {currentUser && (
+        <Route
+          {...rest}
+          render={(props) => (
+            <div className="private-page">
+              <Header title={state.headerTitle} actions={<UserSessionMenu />} />
+              {
+                // @ts-ignore
+                <Component {...props} updateHeaderTitle={updateHeaderTitle} />
+              }
+            </div>
+          )}
+        />
+      )}
       <LanguageSelector setLoading={setForcedLoading} />
     </>
   );

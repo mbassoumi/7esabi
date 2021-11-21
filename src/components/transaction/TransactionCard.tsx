@@ -1,72 +1,53 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-import { useMutation } from '@apollo/client';
 import { faMinusCircle, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { message, Modal } from 'antd';
-import { format } from 'date-and-time';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GqlFragmentAccount } from '../../graphql/gql/client-schema/types/GqlFragmentAccount';
-import { GqlFragmentTransaction } from '../../graphql/gql/client-schema/types/GqlFragmentTransaction';
-import { TransactionType } from '../../graphql/gql/globalTypes';
-import { GQL_DELETE_TRANSACTION } from '../../graphql/gql/transaction/delete';
-import { GQL_TRANSACTIONS_PAGINATED } from '../../graphql/gql/transaction/getPaginated';
-import { GqlDeleteTransaction } from '../../graphql/gql/transaction/types/GqlDeleteTransaction';
 import {
-  DEFAULT_DATE_FORMAT,
   DEFAULT_ERROR_MESSAGE_DURATION,
   DEFAULT_SUCCESS_MESSAGE_DURATION,
 } from '../../utils/appVars';
-import {
-  useAccountPermission,
-  useBasicUserInfo,
-  useCurrentUser,
-} from '../helpers/storeHelper';
 import CurrencyIcon from '../shared/Currency';
 import { EntityActionButtons } from '../shared/EntityActionButtons';
 import './styles/transactionCard.scss';
+import { AccountTransaction } from '../../@types/AccountTransaction';
+import { Account } from '../../@types/Account';
+import {
+  getCachedCurrentUser,
+  getCachedUserInfo,
+  refreshAccount,
+} from '../helpers/storeHelper';
+import { isEmpty } from 'lodash';
+import {
+  convertApiDateStringToDisplayString,
+  userFullName,
+} from '../../utils/helpers';
+import { AccountTransactionType } from '../../@types/enums';
 import TransactionFormModal from './TransactionFormModal';
+import { useMutation } from 'react-query';
+import { deleteTransactionApi } from '../../api/accountTransactions';
 
 interface TransactionCardProps {
-  transaction: GqlFragmentTransaction;
-  account: GqlFragmentAccount;
-  refreshTransactionsPaginationArgs: {
-    skip: number;
-    take?: number;
-  };
+  transaction: AccountTransaction;
+  account: Account;
 }
 
 interface TransactionCardState {
   transactionFormModalVisible: boolean;
 }
 
-const TransactionCard = ({
-  transaction,
-  account,
-  refreshTransactionsPaginationArgs,
-}: TransactionCardProps) => {
+const TransactionCard = ({ transaction, account }: TransactionCardProps) => {
   const { t, i18n } = useTranslation();
-  const currentUser = useCurrentUser()!;
-  const transactionUser = useBasicUserInfo(transaction.user.id)!;
-  const accountUser = useBasicUserInfo(account.accountGroup.user.id)!;
-  const isTransactionForCurrentUser = currentUser.id === transaction.user.id;
-  const accountPermission = useAccountPermission(account.id);
+  const currentUser = getCachedCurrentUser()!;
+  const transactionUser = getCachedUserInfo(transaction.user_id)!;
+  const accountUser = getCachedUserInfo(account.account_group.user_id)!;
   const isAccountForCurrentUser = currentUser.id === accountUser.id;
+  const isTransactionForCurrentUser = currentUser.id === transaction.user_id;
+  const isAccountSharedWithOthers = !isEmpty(account.permissions);
 
-  const [deleteTransactionFn] = useMutation<GqlDeleteTransaction>(
-    GQL_DELETE_TRANSACTION,
-    {
-      refetchQueries: [
-        {
-          query: GQL_TRANSACTIONS_PAGINATED,
-          variables: {
-            accountId: account!.id,
-            ...refreshTransactionsPaginationArgs,
-          },
-        },
-      ],
-      awaitRefetchQueries: true,
-    }
+  const deleteAccountTransactionMutation = useMutation(async () =>
+    deleteTransactionApi(transaction.id, account.id)
   );
 
   const [state, setState] = useState({
@@ -81,7 +62,8 @@ const TransactionCard = ({
    * Update Transaction Modal
    */
 
-  const onSaveTransaction = (mutationInfo: any) => {
+  const onSaveTransaction = async (mutationInfo: any) => {
+    await refreshAccount(account.id);
     closeModals();
   };
 
@@ -91,12 +73,10 @@ const TransactionCard = ({
       onCancel={closeModals}
       account={account}
       transaction={transaction}
-      updateMode
-      refreshTransactionsPaginationArgs={refreshTransactionsPaginationArgs}
     />
   );
 
-  const openTransactionFormModal = (transaction: GqlFragmentTransaction) => {
+  const openTransactionFormModal = (transaction: AccountTransaction) => {
     setState((state) => ({
       ...state,
       transactionFormModalVisible: true,
@@ -109,14 +89,14 @@ const TransactionCard = ({
 
   const onDeleteTransaction = async () => {
     try {
-      await deleteTransactionFn({
-        variables: { id: transaction.id },
-      });
+      const data = await deleteAccountTransactionMutation.mutateAsync();
 
       message.success(
         t(`generic.messages.success`),
         DEFAULT_SUCCESS_MESSAGE_DURATION
       );
+
+      await refreshAccount(account.id);
     } catch (error) {
       console.log('error', error);
       message.error(
@@ -135,6 +115,7 @@ const TransactionCard = ({
       okType: 'danger',
       cancelText: t('generic.actions.no'),
       onOk: onDeleteTransaction,
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       onCancel() {},
     });
   };
@@ -143,11 +124,7 @@ const TransactionCard = ({
    * Action buttons
    */
   const transactionActionButtons = () => {
-    if (
-      !isTransactionForCurrentUser ||
-      (!isAccountForCurrentUser && !accountPermission?.canEdit)
-    )
-      return <></>;
+    if (!isAccountForCurrentUser) return <></>;
 
     return (
       <EntityActionButtons
@@ -164,22 +141,18 @@ const TransactionCard = ({
    */
 
   const dateInfoLine = () => {
-    const dateString = format(
-      new Date(transaction.date),
-      DEFAULT_DATE_FORMAT,
-      false
-    );
-    if (account.isShared) {
+    const dateString = convertApiDateStringToDisplayString(transaction.date);
+    if (isAccountSharedWithOthers) {
       const userName = isTransactionForCurrentUser
         ? t('user.you')
-        : transactionUser.fullName;
+        : userFullName(transactionUser);
       return `${dateString}, ${userName}`;
     } else {
       return dateString;
     }
   };
   const actionType =
-    transaction.type === TransactionType.CREDIT ? (
+    transaction.transaction_type === AccountTransactionType.CREDIT ? (
       <span style={{ color: 'green' }}>
         <FontAwesomeIcon icon={faPlusCircle} />{' '}
         {t('transaction.operation.deposit')}
