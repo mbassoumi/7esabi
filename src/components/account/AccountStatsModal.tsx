@@ -90,8 +90,8 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
       if (account.currency == state.selectedCurrency || account.balance == 0)
         continue;
 
-      const convertedAmount = getConvertedBalance(account);
-      if (!convertedAmount) {
+      const convertedBalance = getConvertedBalance(account);
+      if (!convertedBalance) {
         const srcCurrency = currencyFormalCode(account.currency);
         const destCurrency = currencyFormalCode(state.selectedCurrency);
         const queryParam = `${srcCurrency}_${destCurrency}`;
@@ -101,13 +101,13 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
           )
           .then((res) => {
             const conversionRatio = res.data && res.data[queryParam];
-            const convertedAmount = conversionRatio
+            const convertedBalance = conversionRatio
               ? account.balance * conversionRatio
               : -1;
             updateSelectedAccountBalance(
               account,
               destCurrency,
-              convertedAmount
+              convertedBalance
             );
           })
           .catch((error) => {
@@ -124,16 +124,16 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
   const updateSelectedAccountBalance = (
     account: any,
     currencyCode: string,
-    amount: number
+    balance: number
   ) => {
     setState((state) => {
       const accountConversions = state.accountConversions || {};
       const targetAccount = accountConversions[account.id];
       if (targetAccount) {
-        targetAccount.conversions[currencyCode] = amount;
+        targetAccount.conversions[currencyCode] = balance;
       } else {
         accountConversions[account.id] = {
-          conversions: { [currencyCode]: amount },
+          conversions: { [currencyCode]: balance },
         };
       }
       return {
@@ -203,7 +203,7 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
         </div>
         <ul>
           {reverse(sortBy(dataList, ['balance'])).map((account) => {
-            const convertedAmount =
+            const convertedBalance =
               account.currency == state.selectedCurrency
                 ? ''
                 : `- (${Number(
@@ -217,7 +217,7 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
                   account.balance
                 ).toLocaleString()} ${t(
                   `account.currency.${account.currency}`
-                )}) ${convertedAmount}`}
+                )}) ${convertedBalance}`}
               </li>
             );
           })}
@@ -227,11 +227,11 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
   };
 
   const modalContent = () => {
-    let totalCreditAmounts = 0;
+    let totalCreditBalance = 0;
     for (const account of state.selectedAccounts! || []) {
-      const convertedAmount = getConvertedBalance(account) || account.balance;
-      if (convertedAmount >= 0) {
-        totalCreditAmounts = totalCreditAmounts + convertedAmount;
+      const convertedBalance = getConvertedBalance(account) || account.balance;
+      totalCreditBalance = totalCreditBalance + convertedBalance;
+      if (convertedBalance >= 0) {
         creditAccounts.push(account);
       } else {
         debitAccounts.push(account);
@@ -244,40 +244,46 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
       );
     }
 
-    // filter out any amount that is less than < 3% of the amount so that
-    // the chart won't become crowded and over each other
-    let insignificantAmounts = 0;
-    let index = 0;
-    const significantAmountThreshold = totalCreditAmounts * 0.03;
-    for (const account of creditAccounts) {
-      const convertedAmount = getConvertedBalance(account) || account.balance;
-      if (convertedAmount! >= significantAmountThreshold) {
+    if (totalCreditBalance > 0) {
+      // filter out any balance that is less than < 3% of the total balance so that
+      // the chart won't become crowded and over each other
+      let insignificantBalances = 0;
+      let index = 0;
+      const significantBalanceThreshold = totalCreditBalance * 0.03;
+      for (const account of creditAccounts) {
+        const convertedBalance =
+          getConvertedBalance(account) || account.balance;
+        if (convertedBalance! >= significantBalanceThreshold) {
+          chartData.push({
+            title: accountFullName(account),
+            value: convertedBalance,
+            color: COLORS[index % COLORS.length],
+          });
+          index = index + 1;
+        } else {
+          insignificantBalances = insignificantBalances + convertedBalance;
+        }
+      }
+
+      if (insignificantBalances > 0) {
         chartData.push({
-          title: accountFullName(account),
-          value: convertedAmount,
+          title: t('generic.words.others'),
+          value: insignificantBalances,
           color: COLORS[index % COLORS.length],
         });
-        index = index + 1;
-      } else {
-        insignificantAmounts = insignificantAmounts + convertedAmount;
       }
-    }
-
-    if (insignificantAmounts > 0) {
-      chartData.push({
-        title: t('generic.words.others'),
-        value: insignificantAmounts,
-        color: COLORS[index % COLORS.length],
-      });
     }
 
     return (
       <>
+        {isEmpty(chartData) && (
+          <Alert message={t('stats.negativeOrZeroBalances')} type={'warning'} />
+        )}
         {!isEmpty(chartData) && pieChart()}
         {!isEmpty(chartData) && (
-          <div className="account-stats-modal__total-amount">
-            {`${t('stats.totalAmount')}: ${Number(
-              totalCreditAmounts || 0
+          <div className="account-stats-modal__total-balance">
+            {`${t('stats.totalBalance')}: ${Number(
+              totalCreditBalance || 0
             ).toLocaleString()} ${t(
               `account.currency.${state.selectedCurrency}`
             )}`}
