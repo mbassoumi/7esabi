@@ -143,8 +143,10 @@ export default {
     },
 
     stats: {
+      negativeOrZeroBalances:
+        'المجموع الكلي للحسابات صفر او أقل.. الرسم البياني غير ممكن!',
       selectAccountsPlaceholder: 'اختر الحسابات',
-      totalAmount: 'المجموع الكلي',
+      totalBalance: 'المجموع الكلي',
       conversionApiIsDown:
         'خدمة تحويل العملات لا تعمل حاليا... الأرقام أدناه قد تكون غير صحيحة... يرجى المحاولة لاحقا',
     },

@@ -143,8 +143,10 @@ export default {
     },
 
     stats: {
+      negativeOrZeroBalances:
+        'Accounts total balance is zero or less. Cannot draw pie-chart!',
       selectAccountsPlaceholder: 'Select accounts',
-      totalAmount: 'Total amount',
+      totalBalance: 'Total amount',
       conversionApiIsDown:
         'Incorrect conversions! Currency conversion service is currently down.. Please try again later',
     },
