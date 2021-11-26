@@ -11,6 +11,7 @@ import { AccountGroup } from '../../@types/AccountGroup';
 import { getCachedAccountGroups } from '../helpers/storeHelper';
 import { accountFullName } from '../../utils/helpers';
 import CurrencySelector from '../shared/CurrencySelector';
+import TransactionsList from '../accountTransaction/TransactionsList';
 
 const COLORS = [
   '#0088FE',
@@ -226,6 +227,13 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
     );
   };
 
+  const transactionsList = (accounts: Account[]) => (
+    <>
+      <br />
+      <TransactionsList accounts={accounts} />
+    </>
+  );
+
   const modalContent = () => {
     let totalCreditBalance = 0;
     for (const account of state.selectedAccounts! || []) {
@@ -291,6 +299,8 @@ const AccountStatsModal = ({ onOk }: AccountStatsModalProps) => {
         )}
         {!isEmpty(creditAccounts) && detailsList(creditAccounts, 1)}
         {!isEmpty(debitAccounts) && detailsList(debitAccounts, -1)}
+        {(!isEmpty(creditAccounts) || !isEmpty(debitAccounts)) &&
+          transactionsList(creditAccounts.concat(debitAccounts))}
       </>
     );
   };

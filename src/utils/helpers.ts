@@ -51,18 +51,10 @@ export const initAccountPermissionParamsList = (
 export const initAccountParams = (account?: Account): AccountParams => {
   if (account) {
     return {
-      ...pick(account, ['name', 'currency']),
+      ...pick(account, ['name', 'currency', 'archived']),
       permissions: initAccountPermissionParamsList(account.permissions),
     };
   }
 
-  return { currency: Currency.USD, permissions: [] } as any;
+  return { currency: Currency.USD, archived: false, permissions: [] } as any;
 };
-
-// export const initAccountPermissionsList = (account?: Account): AccountPermission[] => {
-//   if(!account?.permissions) {
-//     return [];
-//   }
-//
-//   return account.permissions.map((permission))
-// }

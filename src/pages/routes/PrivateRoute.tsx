@@ -30,17 +30,17 @@ const PrivateRoute = ({
   location,
   ...rest
 }: RouteProps) => {
-  const { isLoading, data: currentUser } = useQuery<User>(
+  const { isLoading: isCurrentUserLoading, data: currentUser } = useQuery<User>(
     queryKeyForCurrentUser(),
     getCurrentUserApi
   );
 
   // preload all users list
-  const { isLoading: isLoading2, data: allUsers } = useQuery<User[]>(
+  const { isLoading: isAllUsersLoading, data: allUsers } = useQuery<User[]>(
     queryKeyForAllUsers(),
     listUsersApi,
     {
-      enabled: !isLoading && !isEmpty(currentUser),
+      enabled: !isCurrentUserLoading && !isEmpty(currentUser),
     }
   );
 
@@ -49,7 +49,8 @@ const PrivateRoute = ({
     forcedLoading: false,
   });
 
-  if (isLoading || state.forcedLoading) return <LoadingPage />;
+  if (isCurrentUserLoading || isAllUsersLoading || state.forcedLoading)
+    return <LoadingPage />;
 
   const updateHeaderTitle = (title: string) => {
     setState((state) => ({
@@ -65,20 +66,25 @@ const PrivateRoute = ({
   return (
     <>
       {currentUser && (
-        <Route
-          {...rest}
-          render={(props) => (
-            <div className="private-page">
-              <Header title={state.headerTitle} actions={<UserSessionMenu />} />
-              {
-                // @ts-ignore
-                <Component {...props} updateHeaderTitle={updateHeaderTitle} />
-              }
-            </div>
-          )}
-        />
+        <>
+          <Route
+            {...rest}
+            render={(props) => (
+              <div className="private-page">
+                <Header
+                  title={state.headerTitle}
+                  actions={<UserSessionMenu />}
+                />
+                {
+                  // @ts-ignore
+                  <Component {...props} updateHeaderTitle={updateHeaderTitle} />
+                }
+              </div>
+            )}
+          />
+          <LanguageSelector setLoading={setForcedLoading} />
+        </>
       )}
-      <LanguageSelector setLoading={setForcedLoading} />
     </>
   );
 };

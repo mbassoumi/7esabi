@@ -31,18 +31,22 @@ import { deleteTransactionApi } from '../../api/accountTransactions';
 interface TransactionCardProps {
   transaction: AccountTransaction;
   account: Account;
+  editMode: boolean;
 }
 
 interface TransactionCardState {
   transactionFormModalVisible: boolean;
 }
 
-const TransactionCard = ({ transaction, account }: TransactionCardProps) => {
+const TransactionCard = ({
+  transaction,
+  account,
+  editMode,
+}: TransactionCardProps) => {
   const { t, i18n } = useTranslation();
   const currentUser = getCachedCurrentUser()!;
   const transactionUser = getCachedUserInfo(transaction.user_id)!;
   const accountUser = getCachedUserInfo(account.account_group.user_id)!;
-  const isAccountForCurrentUser = currentUser.id === accountUser.id;
   const isTransactionForCurrentUser = currentUser.id === transaction.user_id;
   const isAccountSharedWithOthers = !isEmpty(account.permissions);
 
@@ -124,7 +128,7 @@ const TransactionCard = ({ transaction, account }: TransactionCardProps) => {
    * Action buttons
    */
   const transactionActionButtons = () => {
-    if (!isAccountForCurrentUser) return <></>;
+    if (!editMode) return <></>;
 
     return (
       <EntityActionButtons

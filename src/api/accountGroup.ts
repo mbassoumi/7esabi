@@ -11,23 +11,37 @@ export interface AccountGroupParams {
   name: string;
 }
 
-export const listAccountGroupApi = async () =>
-  getRequest<AccountGroup[]>(`${API_SERVER}/account_groups`);
+export const listAccountGroupApi = async () => {
+  const apiResponse = await getRequest<AccountGroup[]>(
+    `${API_SERVER}/account_groups`
+  );
+  return apiResponse.data!;
+};
 
 export const createAccountGroupApi = async (
   accountGroupParams: AccountGroupParams
-) =>
-  postRequest<AccountGroup>(`${API_SERVER}/account_groups`, {
-    account_group: accountGroupParams,
-  });
+) => {
+  const apiResponse = await postRequest<AccountGroup>(
+    `${API_SERVER}/account_groups`,
+    {
+      account_group: accountGroupParams,
+    }
+  );
+  return apiResponse.data!;
+};
 
 export const updateAccountGroupApi = async (
   id: number,
   accountGroupParams: AccountGroupParams
-) =>
-  putRequest<AccountGroup>(`${API_SERVER}/account_groups/${id}`, {
-    account_group: accountGroupParams,
-  });
+) => {
+  const apiResponse = await putRequest<AccountGroup>(
+    `${API_SERVER}/account_groups/${id}`,
+    {
+      account_group: accountGroupParams,
+    }
+  );
+  return apiResponse.data!;
+};
 
 export const deleteAccountGroupApi = async (id: number) =>
   deleteRequest(`${API_SERVER}/account_groups/${id}`);

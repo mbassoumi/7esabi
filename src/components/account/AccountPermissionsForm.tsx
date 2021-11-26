@@ -74,8 +74,6 @@ const AccountPermissionsForm = ({
     possibleUsers: [],
   });
 
-  console.log(`render original listtttt`, accountPermissionParamsList);
-
   useEffect(() => {
     let adjustedColumnDefs: any = columnDefs;
     if (!editMode) {

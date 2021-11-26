@@ -120,6 +120,7 @@ export default {
         add: 'Add Transaction',
         edit: 'Edit Transaction',
         delete: 'Delete Transaction',
+        filter: 'Filter',
       },
       form: {
         title: {
@@ -129,6 +130,10 @@ export default {
         inputAmount: 'Enter amount',
         inputDescription: 'Add description',
         selectDate: 'Select Date',
+      },
+      filters: {
+        startDate: 'Start Date',
+        endDate: 'End Date',
       },
       deleteForm: {
         title: 'Delete Transaction',

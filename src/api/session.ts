@@ -2,19 +2,24 @@ import { API_SERVER } from '../utils/envVars';
 import { getRequest, postRequest } from './apiHelper';
 import { User } from '../@types/User';
 
-export const logoutRequestApi = async () =>
-  postRequest(`${API_SERVER}/sessions/logout`, {});
+export const logoutRequestApi = async () => {
+  const apiResponse = await postRequest(`${API_SERVER}/sessions/logout`, {});
+  return apiResponse.data!;
+};
 
 export const getOauthCallbackApi = async (params: {
   code: string;
   state: string;
 }) => {
   console.log('getOauthCallback - params', params);
-  return await getRequest<User>(
+  const apiResponse = await getRequest<User>(
     `${API_SERVER}/users/auth/cognito/callback`,
     params
   );
+  return apiResponse.data!;
 };
 
-export const getCurrentUserApi = async () =>
-  getRequest<User>(`${API_SERVER}/sessions/current`);
+export const getCurrentUserApi = async () => {
+  const apiResponse = await getRequest<User>(`${API_SERVER}/sessions/current`);
+  return apiResponse.data!;
+};

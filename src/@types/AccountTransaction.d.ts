@@ -7,4 +7,5 @@ export interface AccountTransaction {
   description: string | null;
   date: string;
   user_id: number;
+  account_id: number;
 }

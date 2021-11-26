@@ -13,8 +13,8 @@ const OauthCallback = () => {
   const queryParams = useQueryParams();
   const codeParam = queryParams.get('code');
   const stateParam = queryParams.get('state');
-  console.log('**** code', codeParam);
-  console.log('**** state', stateParam);
+  // console.log('**** code', codeParam);
+  // console.log('**** state', stateParam);
 
   if (isEmpty(codeParam || stateParam)) {
     console.error(`empty codeParam or stateParam`, codeParam, stateParam);

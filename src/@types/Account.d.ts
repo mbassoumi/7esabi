@@ -8,6 +8,7 @@ export interface Account {
   name: string;
   balance: number;
   currency: Currency;
+  archived: boolean;
   account_group: AccountGroup;
   permissions: AccountPermission[];
   last_transaction: AccountTransaction | null;

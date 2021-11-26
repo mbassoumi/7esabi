@@ -7,10 +7,14 @@ export interface UserParams {
   locale: string;
 }
 
-export const listUsersApi = async () =>
-  getRequest<User[]>(`${API_SERVER}/users`);
+export const listUsersApi = async () => {
+  const apiResponse = await getRequest<User[]>(`${API_SERVER}/users`);
+  return apiResponse.data!;
+};
 
-export const updateUserApi = async (id: number, userParams: UserParams) =>
-  putRequest<Account>(`${API_SERVER}/users/${id}`, {
+export const updateUserApi = async (id: number, userParams: UserParams) => {
+  const apiResponse = await putRequest<Account>(`${API_SERVER}/users/${id}`, {
     user: userParams,
   });
+  return apiResponse.data!;
+};

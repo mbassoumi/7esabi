@@ -116,7 +116,6 @@ const AccountFormModal = ({
         // new permission
         newState.accountParams.permissions.push(accountPermissionParams);
       }
-      console.log(`new stateee`, newState);
       return newState;
     });
   };

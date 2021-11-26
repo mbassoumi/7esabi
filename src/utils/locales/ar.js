@@ -120,6 +120,7 @@ export default {
         add: 'أضف حركة مالية',
         edit: 'تعديل الحركة المالية',
         delete: 'حذف الحركة المالية',
+        filter: 'ابحث',
       },
       form: {
         title: {
@@ -129,6 +130,10 @@ export default {
         inputAmount: 'اذخل المبلغ',
         inputDescription: 'ملاحظات...',
         selectDate: 'اختر تايخ الحركة',
+      },
+      filters: {
+        startDate: 'تاريخ البداية',
+        endDate: 'تاريخ النهاية',
       },
       deleteForm: {
         title: 'حذف الحركة المالية',

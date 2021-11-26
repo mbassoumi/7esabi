@@ -8,7 +8,7 @@ import './styles/account.scss';
 import { useQuery } from 'react-query';
 import { getAccountApi } from '../api/account';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
-import TransactionsList from '../components/transaction/TransactionsList';
+import TransactionsList from '../components/accountTransaction/TransactionsList';
 
 interface AccountPageParams {
   accountGroupId?: string;
@@ -41,7 +41,7 @@ const Account = ({ updateHeaderTitle }: PrivateRouteProps) => {
           <AccountCard account={account!} isInFullAccountMode />
         </div>
         <div className="account-page__transactions-list">
-          <TransactionsList account={account!} />
+          <TransactionsList accounts={[account!]} singleAccountMode />
         </div>
       </div>
     </>
