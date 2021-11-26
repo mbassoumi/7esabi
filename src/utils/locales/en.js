@@ -49,17 +49,23 @@ export default {
         add: 'Add Account Group',
         edit: 'Edit Account Group',
         delete: 'Delete Account Group',
+        showArchived: 'Archived',
       },
       form: {
         title: {
           edit: 'Edit Account Group',
           create: 'New Account Group',
         },
+        archivedWarning: {
+          title: 'Archived',
+          body: 'Account will be automatically hidden from the accounts list in the dashboard (but will NOT be deleted)... You can always view archived accounts or undo an archive.',
+        },
         inputAccountGroupName: 'Account Group Name',
+        inputAccountGroupArchived: 'Archived',
       },
       deleteForm: {
         title: 'Delete Account Group',
-        body: 'Are you sure? If you delete an account group, all the accounts inside it and transactions on them will be deleted.',
+        body: 'Are you sure? If you delete an account group, all the accounts inside it (including archived accounts) and all their transactions on them will be deleted.',
       },
     },
 

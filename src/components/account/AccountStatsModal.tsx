@@ -1,6 +1,6 @@
 import { Alert, Button, Modal, Select } from 'antd';
 import axios from 'axios';
-import { flatten, isEmpty, reverse, sortBy } from 'lodash';
+import { filter, flatten, isEmpty, reverse, sortBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PieChart } from 'react-minimal-pie-chart';
@@ -39,8 +39,12 @@ interface AccountStatsModalState {
   conversionApiIsDown: boolean;
 }
 
-const extractAllAccounts = (accountGroups: AccountGroup[]) =>
-  flatten(accountGroups?.map((accountGroup) => accountGroup.accounts) || []);
+const extractAllAccounts = (accountGroups: AccountGroup[]) => {
+  const accountsList = flatten(
+    accountGroups?.map((accountGroup) => accountGroup.accounts || []) || []
+  );
+  return filter(accountsList, (account) => !account.archived);
+};
 
 const currencyFormalCode = (currency: Currency) => {
   if (currency == Currency.USD || currency == Currency.JOD) return currency;

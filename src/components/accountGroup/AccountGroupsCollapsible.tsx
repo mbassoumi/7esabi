@@ -1,6 +1,11 @@
-import { faHandshake, faPlus } from '@fortawesome/free-solid-svg-icons';
+import {
+  faEye,
+  faEyeSlash,
+  faHandshake,
+  faPlus,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Collapse } from 'antd';
+import { Button, Collapse, Switch } from 'antd';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AccountCard from '../account/AccountCard';
@@ -14,8 +19,11 @@ import {
   refreshAccountGroups,
 } from '../helpers/storeHelper';
 import AccountFormModal from '../account/AccountFormModal';
+import { concat, filter, includes, without } from 'lodash';
+import { Account } from '../../@types/Account';
 
 interface AccountGroupsCollapsibleState {
+  inArchivedMode: number[];
   selectedAccountGroup: AccountGroup | null;
   accountFormModalVisible: boolean;
   accountGroupFormModalVisible: boolean;
@@ -27,6 +35,7 @@ const AccountGroupsCollapsible = ({}) => {
   const accountGroups = getCachedAccountGroups();
 
   const [state, setState] = useState<AccountGroupsCollapsibleState>({
+    inArchivedMode: [],
     selectedAccountGroup: null,
     accountFormModalVisible: false,
     accountGroupFormModalVisible: false,
@@ -114,20 +123,93 @@ const AccountGroupsCollapsible = ({}) => {
    * Add Account Button
    */
   const addAccountButton = (accountGroup: AccountGroup) => (
-    <div className="account-groups-collapsible__add-account">
-      <Button
-        className="account-groups-collapsible__add-account__button"
-        onClick={() => openAccountFormModal(accountGroup)}
-      >
-        <FontAwesomeIcon icon={faPlus} color="green" />
-        <span>{t('account.actions.add')}</span>
-      </Button>
-    </div>
+    <Button
+      className="account-groups-collapsible__add-account__button"
+      onClick={() => openAccountFormModal(accountGroup)}
+    >
+      <FontAwesomeIcon icon={faPlus} color="green" />
+      <span>{t('account.actions.add')}</span>
+    </Button>
   );
+
+  /*
+   * Show Archived Button
+   */
+
+  const setArchivedAccountsButton = (
+    accountGroup: AccountGroup,
+    archivedMode: boolean
+  ) => {
+    setState((state) => {
+      let inArchivedMode: number[];
+      if (archivedMode) {
+        inArchivedMode = concat(state.inArchivedMode, [accountGroup.id]);
+      } else {
+        inArchivedMode = without(state.inArchivedMode, accountGroup.id);
+      }
+      return {
+        ...state,
+        inArchivedMode: inArchivedMode,
+      };
+    });
+  };
+
+  const filteredAccountsList = (accountGroup: AccountGroup) => {
+    const accounts = accountGroup!.accounts || [];
+    const archivedMode = includes(state.inArchivedMode, accountGroup.id);
+    return (
+      filter(accounts, (account) => account.archived == archivedMode) ||
+      ([] as Account[])
+    );
+  };
+
+  const archivedModeSwitch = (accountGroup: AccountGroup) => {
+    const archivedAccountsCount =
+      filter(accountGroup.accounts || [], (account) => account.archived == true)
+        ?.length || 0;
+
+    const switchLabel = `${t(
+      'accountGroup.actions.showArchived'
+    )} (${archivedAccountsCount})`;
+
+    return (
+      <Switch
+        className="account-groups-collapsible__panel__action-buttons__archived-mode"
+        onChange={(enabled) => setArchivedAccountsButton(accountGroup, enabled)}
+        checkedChildren={
+          <span>
+            {' '}
+            <FontAwesomeIcon icon={faEye} />
+            {switchLabel}
+          </span>
+        }
+        unCheckedChildren={
+          <span>
+            <FontAwesomeIcon icon={faEyeSlash} color="gray" />
+            {switchLabel}
+          </span>
+        }
+        checked={includes(state.inArchivedMode, accountGroup.id)}
+      />
+    );
+  };
 
   /*
    * other ui components
    */
+
+  const accountGroupPanelActionButtons = (
+    accountGroup: AccountGroup,
+    isSharedGroup = false
+  ) => (
+    <div
+      className="account-groups-collapsible__panel__action-buttons"
+      onClick={(event) => event.stopPropagation()}
+    >
+      {!isSharedGroup && addAccountButton(accountGroup)}
+      {archivedModeSwitch(accountGroup)}
+    </div>
+  );
 
   const accountGroupCollapsePanel = (accountGroup: AccountGroup) => {
     const isSharedGroup = accountGroup.name === 'shared_with_me';
@@ -153,8 +235,8 @@ const AccountGroupsCollapsible = ({}) => {
           )
         }
       >
-        {!isSharedGroup && addAccountButton(accountGroup)}
-        {accountGroup!.accounts?.map((account: any) => {
+        {accountGroupPanelActionButtons(accountGroup, isSharedGroup)}
+        {filteredAccountsList(accountGroup!).map((account: any) => {
           return (
             <div
               key={`account_${account.id}_card`}

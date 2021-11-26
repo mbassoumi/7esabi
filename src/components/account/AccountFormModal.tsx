@@ -1,4 +1,4 @@
-import { Divider, Input, message, Modal } from 'antd';
+import { Alert, Checkbox, Divider, Input, message, Modal } from 'antd';
 import { isEmpty, remove } from 'lodash';
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,7 @@ import { Currency } from '../../@types/enums';
 import CurrencySelector from '../shared/CurrencySelector';
 import AccountPermissionsForm from './AccountPermissionsForm';
 import { initAccountParams } from '../../utils/helpers';
+import { CheckboxChangeEvent } from 'antd/es/checkbox';
 
 interface AccountFormModalProps {
   accountGroup: AccountGroup;
@@ -76,9 +77,11 @@ const AccountFormModal = ({
   /*
    * Actions and event handlers
    */
-  const onAccountInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const fieldName = e.target.name;
-    const fieldValue = e.target.value;
+
+  const onAccountParamChanged = (
+    fieldName: string,
+    fieldValue: string | boolean
+  ) =>
     setState((state) => ({
       ...state,
       accountParams: {
@@ -86,6 +89,11 @@ const AccountFormModal = ({
         [fieldName]: fieldValue,
       } as AccountParams,
     }));
+
+  const onAccountInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const fieldName = e.target.name;
+    const fieldValue = e.target.value;
+    onAccountParamChanged(fieldName, fieldValue);
   };
 
   const onCurrencySelectChange = (selectValue: string) => {
@@ -161,6 +169,18 @@ const AccountFormModal = ({
     />
   );
 
+  const onArchivedChange = (e: CheckboxChangeEvent) =>
+    onAccountParamChanged('archived', e.target.checked);
+
+  const archivedInput = () => (
+    <Checkbox
+      checked={state.accountParams!.archived}
+      onChange={onArchivedChange}
+    >
+      {t('accountGroup.form.inputAccountGroupArchived')}
+    </Checkbox>
+  );
+
   return (
     <Modal
       visible={true}
@@ -197,6 +217,18 @@ const AccountFormModal = ({
           />
         </div>
         <div className="account-form__input">{currencySelector()}</div>
+        {updateMode && (
+          <div className="account-form__input">{archivedInput()}</div>
+        )}
+        {state.accountParams.archived && (
+          <Alert
+            message={t('accountGroup.form.archivedWarning.title')}
+            description={t('accountGroup.form.archivedWarning.body')}
+            type="warning"
+            showIcon
+            style={{ marginBottom: '5px' }}
+          />
+        )}
         <Divider>{t('account.form.permissionsSectionHeader')}</Divider>
         <div className="account-form__input">
           <AccountPermissionsForm
