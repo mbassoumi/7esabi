@@ -6,6 +6,12 @@ export default {
     },
 
     generic: {
+      entities: {
+        accountGroup: 'مجموعة الحسابات',
+        account: 'حساب',
+        accountPermission: 'صلاحية',
+        accountTransaction: 'حركة مالية',
+      },
       messages: {
         welcome: 'أهلا بك',
         loadingPleaseWait: 'يرجى الإنتظار...',

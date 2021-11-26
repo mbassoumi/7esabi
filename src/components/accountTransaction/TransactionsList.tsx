@@ -265,6 +265,7 @@ const TransactionsList = ({
                   account={accountForId(transaction.account_id)!}
                   transaction={transaction}
                   editMode={editMode}
+                  singleAccountMode={singleAccountMode}
                 />
               </List.Item>
             )

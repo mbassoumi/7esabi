@@ -66,10 +66,11 @@ const LanguageSelector = ({ setLoading }: LanguageSelectorProps) => {
 
   return (
     <Select
+      dropdownAlign="top"
       value={getCodeForLocale(i18n.language || 'en')}
       className="language-selector"
       onChange={onChange}
-      getPopupContainer={() => document.getElementById('root') as any}
+      getPopupContainer={(trigger) => trigger.parentNode}
     >
       <Select.Option value={LocaleCode.EN}>English</Select.Option>
       <Select.Option value={LocaleCode.AR}>Arabic</Select.Option>

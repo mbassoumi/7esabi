@@ -20,6 +20,7 @@ import {
 } from '../helpers/storeHelper';
 import { isEmpty } from 'lodash';
 import {
+  accountFullName,
   convertApiDateStringToDisplayString,
   userFullName,
 } from '../../utils/helpers';
@@ -32,6 +33,7 @@ interface TransactionCardProps {
   transaction: AccountTransaction;
   account: Account;
   editMode: boolean;
+  singleAccountMode?: boolean;
 }
 
 interface TransactionCardState {
@@ -42,11 +44,11 @@ const TransactionCard = ({
   transaction,
   account,
   editMode,
+  singleAccountMode,
 }: TransactionCardProps) => {
   const { t, i18n } = useTranslation();
   const currentUser = getCachedCurrentUser()!;
   const transactionUser = getCachedUserInfo(transaction.user_id)!;
-  const accountUser = getCachedUserInfo(account.account_group.user_id)!;
   const isTransactionForCurrentUser = currentUser.id === transaction.user_id;
   const isAccountSharedWithOthers = !isEmpty(account.permissions);
 
@@ -179,7 +181,13 @@ const TransactionCard = ({
         >
           {transactionActionButtons()}
         </div>
-
+        {!singleAccountMode && (
+          <div className="transaction-card__line">
+            <span>{`${t('generic.entities.account')}: ${accountFullName(
+              account
+            )}`}</span>
+          </div>
+        )}
         <div className="transaction-card__line">
           <div className="transaction-card__action-type">{actionType}</div>
           <div className="transaction-card__amount">

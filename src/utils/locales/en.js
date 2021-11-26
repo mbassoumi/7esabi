@@ -6,6 +6,12 @@ export default {
     },
 
     generic: {
+      entities: {
+        accountGroup: 'ِAccount Group',
+        account: 'ِAccount',
+        accountPermission: 'ِAccount Permission',
+        accountTransaction: 'ِTransaction',
+      },
       messages: {
         welcome: 'Welcome',
         loadingPleaseWait: 'Loading...',
