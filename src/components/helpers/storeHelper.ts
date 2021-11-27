@@ -1,8 +1,8 @@
 import { useLocation } from 'react-router-dom';
 import { User } from '../../@types/User';
 import { AccountGroup } from '../../@types/AccountGroup';
-import { queryClient } from '../../index';
 import { find } from 'lodash';
+import { queryClient } from '../../queryClient';
 
 export function useQueryParams() {
   const location = useLocation();

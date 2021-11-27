@@ -9,7 +9,7 @@ import {
   userFullName,
   userInitials,
 } from '../../utils/helpers';
-import { queryClient } from '../../index';
+import { queryClient } from '../../queryClient';
 
 interface UserSessionMenuState {
   popoverVisible: boolean;
