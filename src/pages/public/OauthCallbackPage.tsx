@@ -1,5 +1,4 @@
 import React from 'react';
-import { Redirect } from 'react-router-dom';
 import { useQueryParams } from '../../components/helpers/storeHelper';
 import LoadingPage from '../../components/shared/LoadingPage';
 import InternalError from '../../components/shared/InternalError';
@@ -7,6 +6,7 @@ import { useQuery } from 'react-query';
 import { User } from '../../@types/User';
 import { getOauthCallbackApi } from '../../api/session';
 import { isEmpty } from 'lodash';
+import { Navigate } from 'react-router-dom';
 
 const OauthCallbackPage = () => {
   const queryParams = useQueryParams();
@@ -33,7 +33,7 @@ const OauthCallbackPage = () => {
     return <InternalError />;
   }
 
-  return <Redirect to={{ pathname: `/` }} />;
+  return <Navigate to="/" replace />;
 };
 
 export default OauthCallbackPage;

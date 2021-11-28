@@ -14,7 +14,9 @@ const NotFoundPage = () => {
           {t('generic.errors.pageNotFound')}
         </h1>
         <h2 style={{ textAlign: 'center' }}>
-          <Link to="/">{t('generic.links.goToHomePage')}</Link>
+          <Link to="/" replace>
+            {t('generic.links.goToHomePage')}
+          </Link>
         </h2>
       </div>
       <div style={{ margin: '20px', textAlign: 'center' }}>

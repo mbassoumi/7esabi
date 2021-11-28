@@ -293,6 +293,7 @@ const AccountCard = ({
       <Link
         to={`/accountGroup/${account.account_group.id}/account/${account.id}`}
         key={`account_${account.id}_link`}
+        replace
       >
         <div className="account-card__container">
           {isSharedAccount ? sharedAccountInfo() : accountNameLine}

@@ -16,7 +16,7 @@ interface AccountPageParams {
 }
 
 const AccountPage = ({ updateHeaderTitle }: PrivatePageProps) => {
-  const { accountGroupId, id } = useParams<AccountPageParams>();
+  const { accountGroupId, id } = useParams();
   const accountGroupIdParsed = Number(accountGroupId || 0);
   const idParsed = Number(id || 0);
 

@@ -1,7 +1,7 @@
 import { ConfigProvider } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import Routes from './pages/Routes';
+import PageRoutes from './pages/PageRoutes';
 import GenericErrorBoundary from './components/shared/GenericErrorBoundary';
 import { QueryClientProvider } from 'react-query';
 import { queryClient } from './queryClient';
@@ -14,7 +14,7 @@ const App = (): any => {
       <div dir={i18n.dir()}>
         <GenericErrorBoundary>
           <QueryClientProvider client={queryClient}>
-            <Routes />
+            <PageRoutes />
           </QueryClientProvider>
         </GenericErrorBoundary>
       </div>

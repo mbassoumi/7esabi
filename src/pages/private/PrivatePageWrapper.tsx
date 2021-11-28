@@ -1,4 +1,4 @@
-import React, { ComponentProps, FC, useState } from 'react';
+import React, { FC, useState } from 'react';
 import UserSessionMenu from '../../components/shared/UserSessionMenu';
 import Header from '../../components/shared/Header';
 import LoadingPage from '../../components/shared/LoadingPage';
@@ -19,8 +19,8 @@ export interface PrivatePageProps {
   updateHeaderTitle: (title: string) => any;
 }
 
-export interface PrivatePageWrapperProps extends ComponentProps<any> {
-  component: FC<any>;
+export interface PrivatePageWrapperProps {
+  page: FC<any>;
 }
 
 interface PrivatePageWrapperState {
@@ -29,8 +29,7 @@ interface PrivatePageWrapperState {
 }
 
 const PrivatePageWrapper = ({
-  component: Component,
-  ...rest
+  page: PageComponent, // rename to capital to be able to use it as a tag component <Component />
 }: PrivatePageWrapperProps) => {
   const { isLoading: isCurrentUserLoading, data: currentUser } = useQuery<User>(
     queryKeyForCurrentUser(),
@@ -73,7 +72,7 @@ const PrivatePageWrapper = ({
             <Header title={state.headerTitle} actions={<UserSessionMenu />} />
             {
               // @ts-ignore
-              <Component {...rest} updateHeaderTitle={updateHeaderTitle} />
+              <PageComponent updateHeaderTitle={updateHeaderTitle} />
             }
           </div>
           <LanguageSelector setLoading={setForcedLoading} />
