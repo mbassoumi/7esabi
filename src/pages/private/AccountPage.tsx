@@ -1,21 +1,21 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router';
-import AccountCard from '../components/account/AccountCard';
-import { queryKeyForAccount } from '../components/helpers/storeHelper';
-import NotFound from './public/NotFound';
-import { PrivateRouteProps } from './routes/PrivateRoute';
-import './styles/account.scss';
+import AccountCard from '../../components/account/AccountCard';
+import { queryKeyForAccount } from '../../components/helpers/storeHelper';
+import NotFoundPage from '../public/NotFoundPage';
+import { PrivatePageProps } from './PrivatePageWrapper';
+import './styles/accountPage.scss';
 import { useQuery } from 'react-query';
-import { getAccountApi } from '../api/account';
-import LoadingSpinner from '../components/shared/LoadingSpinner';
-import TransactionsList from '../components/accountTransaction/TransactionsList';
+import { getAccountApi } from '../../api/account';
+import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import TransactionsList from '../../components/accountTransaction/TransactionsList';
 
 interface AccountPageParams {
   accountGroupId?: string;
   id?: string;
 }
 
-const Account = ({ updateHeaderTitle }: PrivateRouteProps) => {
+const AccountPage = ({ updateHeaderTitle }: PrivatePageProps) => {
   const { accountGroupId, id } = useParams<AccountPageParams>();
   const accountGroupIdParsed = Number(accountGroupId || 0);
   const idParsed = Number(id || 0);
@@ -32,7 +32,7 @@ const Account = ({ updateHeaderTitle }: PrivateRouteProps) => {
   }, [account]);
 
   if (isLoading) return <LoadingSpinner />;
-  if (!account) return <NotFound />;
+  if (!account) return <NotFoundPage />;
 
   return (
     <>
@@ -48,4 +48,4 @@ const Account = ({ updateHeaderTitle }: PrivateRouteProps) => {
   );
 };
 
-export default Account;
+export default AccountPage;

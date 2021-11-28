@@ -8,7 +8,7 @@ import { isEmpty } from 'lodash';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RouteProps } from 'react-router-dom';
-import '../styles/landingPage.scss';
+import './styles/landingPage.scss';
 import { DEFAULT_OAUTH_URL } from '../../utils/envVars';
 import { useQuery } from 'react-query';
 import { User } from '../../@types/User';

@@ -1,13 +1,13 @@
 import { message } from 'antd';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import AccountGroupsList from '../components/accountGroup/AccountGroupsList';
-import { useQueryParams } from '../components/helpers/storeHelper';
-import { PrivateRouteProps } from './routes/PrivateRoute';
-import './styles/dashboard.scss';
-import { DEFAULT_SUCCESS_MESSAGE_DURATION } from '../utils/appVars';
+import AccountGroupsList from '../../components/accountGroup/AccountGroupsList';
+import { useQueryParams } from '../../components/helpers/storeHelper';
+import { PrivatePageProps } from './PrivatePageWrapper';
+import './styles/dashboardPage.scss';
+import { DEFAULT_SUCCESS_MESSAGE_DURATION } from '../../utils/appVars';
 
-const Dashboard = ({ updateHeaderTitle }: PrivateRouteProps) => {
+const DashboardPage = ({ updateHeaderTitle }: PrivatePageProps) => {
   const { t } = useTranslation();
 
   const queryParams = useQueryParams();
@@ -31,4 +31,4 @@ const Dashboard = ({ updateHeaderTitle }: PrivateRouteProps) => {
   );
 };
 
-export default Dashboard;
+export default DashboardPage;

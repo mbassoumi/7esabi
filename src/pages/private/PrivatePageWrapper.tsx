@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { Route, RouteComponentProps, RouteProps } from 'react-router-dom';
+import React, { ComponentProps, FC, useState } from 'react';
 import UserSessionMenu from '../../components/shared/UserSessionMenu';
 import Header from '../../components/shared/Header';
 import LoadingPage from '../../components/shared/LoadingPage';
-import '../styles/privatePage.scss';
+import './styles/privatePageWrapper.scss';
 import { User } from '../../@types/User';
 import { useQuery } from 'react-query';
 import { getCurrentUserApi } from '../../api/session';
@@ -16,20 +15,23 @@ import { isEmpty } from 'lodash';
 import LanguageSelector from '../../components/shared/LanguageSelector';
 
 // to be used by the the entry page which is wrapped inside this page
-export interface PrivateRouteProps extends RouteComponentProps {
+export interface PrivatePageProps {
   updateHeaderTitle: (title: string) => any;
 }
 
-interface PrivateRouteState {
+export interface PrivatePageWrapperProps extends ComponentProps<any> {
+  component: FC<any>;
+}
+
+interface PrivatePageWrapperState {
   headerTitle: string;
   forcedLoading: boolean;
 }
 
-const PrivateRoute = ({
+const PrivatePageWrapper = ({
   component: Component,
-  location,
   ...rest
-}: RouteProps) => {
+}: PrivatePageWrapperProps) => {
   const { isLoading: isCurrentUserLoading, data: currentUser } = useQuery<User>(
     queryKeyForCurrentUser(),
     getCurrentUserApi
@@ -44,7 +46,7 @@ const PrivateRoute = ({
     }
   );
 
-  const [state, setState] = useState<PrivateRouteState>({
+  const [state, setState] = useState<PrivatePageWrapperState>({
     headerTitle: '',
     forcedLoading: false,
   });
@@ -67,21 +69,13 @@ const PrivateRoute = ({
     <>
       {currentUser && (
         <>
-          <Route
-            {...rest}
-            render={(props) => (
-              <div className="private-page">
-                <Header
-                  title={state.headerTitle}
-                  actions={<UserSessionMenu />}
-                />
-                {
-                  // @ts-ignore
-                  <Component {...props} updateHeaderTitle={updateHeaderTitle} />
-                }
-              </div>
-            )}
-          />
+          <div className="private-page-wrapper">
+            <Header title={state.headerTitle} actions={<UserSessionMenu />} />
+            {
+              // @ts-ignore
+              <Component {...rest} updateHeaderTitle={updateHeaderTitle} />
+            }
+          </div>
           <LanguageSelector setLoading={setForcedLoading} />
         </>
       )}
@@ -89,4 +83,4 @@ const PrivateRoute = ({
   );
 };
 
-export default PrivateRoute;
+export default PrivatePageWrapper;

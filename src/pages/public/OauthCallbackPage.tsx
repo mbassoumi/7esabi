@@ -2,14 +2,13 @@ import React from 'react';
 import { Redirect } from 'react-router-dom';
 import { useQueryParams } from '../../components/helpers/storeHelper';
 import LoadingPage from '../../components/shared/LoadingPage';
-import '../styles/login.scss';
 import InternalError from '../../components/shared/InternalError';
 import { useQuery } from 'react-query';
 import { User } from '../../@types/User';
 import { getOauthCallbackApi } from '../../api/session';
 import { isEmpty } from 'lodash';
 
-const OauthCallback = () => {
+const OauthCallbackPage = () => {
   const queryParams = useQueryParams();
   const codeParam = queryParams.get('code');
   const stateParam = queryParams.get('state');
@@ -37,4 +36,4 @@ const OauthCallback = () => {
   return <Redirect to={{ pathname: `/` }} />;
 };
 
-export default OauthCallback;
+export default OauthCallbackPage;

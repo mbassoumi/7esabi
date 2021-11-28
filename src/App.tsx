@@ -1,7 +1,7 @@
 import { ConfigProvider } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import Routes from './Routes';
+import Routes from './pages/Routes';
 import GenericErrorBoundary from './components/shared/GenericErrorBoundary';
 import { QueryClientProvider } from 'react-query';
 import { queryClient } from './queryClient';
