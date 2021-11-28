@@ -1,9 +1,9 @@
 import { API_SERVER } from '../utils/envVars';
-import { getRequest, postRequest } from './apiHelper';
+import { getRequest } from './apiHelper';
 import { User } from '../@types/User';
 
 export const logoutRequestApi = async () => {
-  const apiResponse = await postRequest(`${API_SERVER}/sessions/logout`, {});
+  const apiResponse = await getRequest(`${API_SERVER}/sessions/logout`, {});
   return apiResponse.data!;
 };
 

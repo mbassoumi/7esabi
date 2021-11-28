@@ -244,7 +244,7 @@ const TransactionFormModal = ({
               defaultValue={convertApiDateStringToDate(
                 state.transactionParams.date
               )}
-              format="YYYY/MM/DD"
+              format="YYYY/MM/D" // otherwise it would keep adding a zero right after the user enter the first days digit
               name={'date'}
               placeholder={t('transaction.form.selectDate')}
               onChange={onTransactionDateChange}
