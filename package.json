@@ -5,10 +5,11 @@
   "scripts": {
     "start": "PORT=3006 react-scripts start",
     "build:clean": "rm -rf build/*",
-    "build": "yarn run build:clean && react-scripts builds",
+    "build": "yarn run build:clean && react-scripts build",
     "env:cp-prod": "cp ./envVars/prod.ts ./src/utils/envVars.ts",
     "env:cp-dev": "cp ./envVars/development.ts ./src/utils/envVars.ts",
-    "build:withEnv": "yarn run env:cp-prod && react-scripts build && yarn run env:cp-dev",
+    "build:withEnv": "yarn run env:cp-prod && yarn build && yarn run env:cp-dev",
+    "release:docker": "cp -r ./build/* /Users/experimental/Development/RubymineProjects/internal-bank-sso/web-client/build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint --ext .ts ."
