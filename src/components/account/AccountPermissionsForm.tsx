@@ -1,40 +1,23 @@
-import {
-  faCheckCircle,
-  faPen,
-  faTimesCircle,
-  faTrash,
-} from '@fortawesome/free-solid-svg-icons';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Alert, Button, Select, Switch, Table } from 'antd';
+import { Alert, Button, Table } from 'antd';
 import { drop, filter, find } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GqlFragmentBasicUserInfo } from '../../graphql/gql/client-schema/types/GqlFragmentBasicUserInfo';
-import { AccountPermissionInput } from '../../graphql/gql/globalTypes';
-import { useAllUsers, useCurrentUser } from '../helpers/storeHelper';
-import AllUsersSelector from '../shared/allUsersSelector';
-
-interface AccountPermissionsFormProps {
-  accountPermissions: AccountPermissionInput[];
-  updateAccountPermission?: (
-    userId: string,
-    accountPermission: AccountPermissionInput | null
-  ) => any;
-  editMode?: boolean;
-}
-
-interface AccountPermissionsFormState {
-  columnDefs: any[];
-  dataSource: AccountPermissionsFormTableRecord[];
-  possibleUsers: GqlFragmentBasicUserInfo[];
-}
+import {
+  getCachedAllUsers,
+  getCachedCurrentUser,
+  getCachedUserInfo,
+} from '../helpers/storeHelper';
+import { User } from '../../@types/User';
+import { userFullName } from '../../utils/helpers';
+import AllUsersSelector from '../shared/AllUsersSelector';
+import { AccountPermissionParams } from '../../api/account';
 
 interface AccountPermissionsFormTableRecord {
   key: string;
   name: string;
-  canEdit: boolean;
   deleteAction: (event: any) => any;
-  onCanEditChange: (checked: boolean) => any;
   editMode: boolean;
 }
 
@@ -59,119 +42,91 @@ const columnDefs = [
     dataIndex: 'name',
     key: 'name',
   },
-  {
-    key: 'canEdit',
-    dataIndex: 'canEdit',
-    render: (canEdit: boolean, record: AccountPermissionsFormTableRecord) => (
-      <>
-        {record.editMode ? (
-          <Switch
-            checkedChildren={<FontAwesomeIcon icon={faPen} color="white" />}
-            unCheckedChildren={<FontAwesomeIcon icon={faPen} color="gray" />}
-            checked={canEdit}
-            onChange={record.onCanEditChange}
-          />
-        ) : record.canEdit ? (
-          <FontAwesomeIcon
-            icon={faCheckCircle}
-            color="green"
-            style={{ margin: 'auto 25px' }}
-          />
-        ) : (
-          <FontAwesomeIcon
-            icon={faTimesCircle}
-            color="red"
-            style={{ margin: 'auto 25px' }}
-          />
-        )}
-      </>
-    ),
-  },
 ];
 
+interface AccountPermissionsFormProps {
+  accountPermissionParamsList: AccountPermissionParams[];
+  editMode?: boolean;
+  createOrDeletePermission?: (
+    accountPermissionParams: AccountPermissionParams,
+    deleted?: boolean
+  ) => void;
+}
+
+interface AccountPermissionsFormState {
+  columnDefs: any[];
+  dataSource: AccountPermissionsFormTableRecord[];
+  possibleUsers: User[];
+}
+
 const AccountPermissionsForm = ({
-  accountPermissions = [],
-  updateAccountPermission,
+  accountPermissionParamsList = [],
+  createOrDeletePermission,
   editMode = false,
 }: AccountPermissionsFormProps) => {
-  const allUsers = useAllUsers();
-  const currentUser = useCurrentUser();
   const { t } = useTranslation();
+  const allUsers = getCachedAllUsers();
+  const currentUser = getCachedCurrentUser();
 
-  const [state, setState] = useState({
+  const [state, setState] = useState<AccountPermissionsFormState>({
     columnDefs: columnDefs,
     dataSource: [],
     possibleUsers: [],
-  } as AccountPermissionsFormState);
+  });
 
   useEffect(() => {
     let adjustedColumnDefs: any = columnDefs;
     if (!editMode) {
       adjustedColumnDefs = drop(adjustedColumnDefs, 1); // drop the first column (the delete button)
     }
+    // use translated names as we cannot use them inside the columns defs
     for (let i = 0; i < adjustedColumnDefs.length; i++) {
       if (adjustedColumnDefs[i].key === 'name') {
         adjustedColumnDefs[i]['title'] = t(
           'accountPermission.form.userNameColumn'
-        );
-      } else if (adjustedColumnDefs[i].key === 'canEdit') {
-        adjustedColumnDefs[i]['title'] = t(
-          'accountPermission.form.canEditColumn'
         );
       }
     }
 
     setState({
       columnDefs: adjustedColumnDefs,
-      dataSource: accountPermissions.map((accountPermission) => ({
-        key: accountPermission.userId,
-        name: nameForUser(accountPermission.userId),
-        canEdit: !!accountPermission.canEdit,
-        deleteAction: (event: any) =>
-          updateAccountPermission!(accountPermission.userId, null),
-        onCanEditChange: (checked: boolean) =>
-          updateAccountPermission!(accountPermission.userId, {
-            ...accountPermission,
-            canEdit: checked,
-          }),
-        editMode,
-      })),
-      possibleUsers: filter(
-        allUsers,
-        (user) => !find(accountPermissions, { userId: user.id })
+      dataSource: accountPermissionParamsList.map(
+        (accountPermissionParams) => ({
+          key: `${accountPermissionParams.user_id}`,
+          name: nameForUser(accountPermissionParams.user_id),
+          deleteAction: (event: any) =>
+            createOrDeletePermission!(accountPermissionParams, true),
+          editMode,
+        })
       ),
+      possibleUsers:
+        filter(
+          allUsers,
+          (user) =>
+            user.id !== currentUser.id &&
+            !find(accountPermissionParamsList, { user_id: user.id })
+        ) || [],
     });
-  }, [accountPermissions, allUsers, editMode]);
+  }, [JSON.stringify(accountPermissionParamsList)]);
 
   /*
    * Helpers
    */
-  const nameForUser = (userId: string) => {
-    if (userId === currentUser!.id)
-      return `${currentUser!.fullName} (${t('user.you')})`;
+  const nameForUser = (userId: number) => {
+    if (userId === currentUser.id)
+      return `${userFullName(currentUser)} (${t('user.you')})`;
 
-    return find(allUsers, { id: userId })?.fullName || `unknown user ${userId}`;
+    const user = getCachedUserInfo(userId)!;
+    return userFullName(user);
   };
 
-  const onPossibleUserSelected = (user: GqlFragmentBasicUserInfo) => {
-    updateAccountPermission!(user.id, { userId: user.id, canEdit: false });
+  const onPossibleUserSelected = (user: User) => {
+    createOrDeletePermission!({ user_id: user.id }, false);
   };
-
-  console.log('rendeeeer');
 
   /*
    * Ui parts
    */
-
-  const selectOptions = () =>
-    state.possibleUsers?.map((user, index) => (
-      <Select.Option
-        key={`account_permission_all_users_select_${user.id}`}
-        value={user.id}
-      >
-        {user.fullName}
-      </Select.Option>
-    ));
 
   return (
     <>

@@ -1,75 +1,71 @@
-import { useMutation } from '@apollo/client';
 import { Input, message, Modal } from 'antd';
 import { isEmpty } from 'lodash';
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GQL_ADD_ACCOUNT_GROUP } from '../../graphql/gql/accountGroup/add';
-import { GqlAddAccountGroup } from '../../graphql/gql/accountGroup/types/GqlAddAccountGroup';
-import { GqlUpdateAccountGroup } from '../../graphql/gql/accountGroup/types/GqlUpdateAccountGroup';
-import { GQL_UPDATE_ACCOUNT_GROUP } from '../../graphql/gql/accountGroup/update';
-import { GqlFragmentAccountGroup } from '../../graphql/gql/client-schema/types/GqlFragmentAccountGroup';
-import { AccountGroupInput } from '../../graphql/gql/globalTypes';
 import {
   DEFAULT_ERROR_MESSAGE_DURATION,
   DEFAULT_SUCCESS_MESSAGE_DURATION,
 } from '../../utils/appVars';
-import { convertToAccountGroupInput } from '../../graphql/utils/typeHelpers';
 import FormModalFooter from '../shared/FormModalFooter';
+import { AccountGroup } from '../../@types/AccountGroup';
+import { useMutation } from 'react-query';
+import {
+  AccountGroupParams,
+  createAccountGroupApi,
+  updateAccountGroupApi,
+} from '../../api/accountGroup';
 
-interface AccountGroupModalState {
-  accountGroupInput: AccountGroupInput;
-}
+type AccountGroupModalState = AccountGroupParams | undefined;
 
 interface AccountGroupModalProps {
   onSave: (mutationInfo: any) => any;
   onCancel: () => any;
-  updateMode?: boolean;
-  accountGroup?: GqlFragmentAccountGroup | null;
+  accountGroup?: AccountGroup | null;
 }
 
 const AccountGroupFormModal = ({
   onSave,
   onCancel,
-  updateMode = false,
-  accountGroup = null,
+  accountGroup,
 }: AccountGroupModalProps) => {
   const { t } = useTranslation();
+  const updateMode = !isEmpty(accountGroup);
 
-  const [addAccountGroupFn, addAccountGroupMutationInfo] = useMutation<
-    GqlAddAccountGroup
-  >(GQL_ADD_ACCOUNT_GROUP);
+  const createAccountGroupMutation = useMutation(createAccountGroupApi);
 
-  const [updateAccountGroupFn, updateAccountGroupMutationInfo] = useMutation<
-    GqlUpdateAccountGroup
-  >(GQL_UPDATE_ACCOUNT_GROUP);
+  const updateAccountGroupMutation = useMutation(
+    async (accountGroupParams: AccountGroupParams) =>
+      updateAccountGroupApi(accountGroup!.id, accountGroupParams)
+  );
 
-  const [state, setState] = useState({
-    accountGroupInput: {},
-  } as AccountGroupModalState);
+  const [state, setState] = useState<AccountGroupModalState>();
 
   useEffect(() => {
-    setState({
-      accountGroupInput: convertToAccountGroupInput(accountGroup),
-    });
-  }, [accountGroup]);
+    if (updateMode) {
+      setState({ name: accountGroup!.name });
+    }
+  }, []);
 
   /*
    * Actions and events handlers
    */
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
-    setState((state: any) => ({
-      accountGroupInput: { ...state.accountGroupInput, name },
+    setState((state: AccountGroupModalState) => ({
+      ...state,
+      name,
     }));
   };
 
   const onSaveClick = async (event: any) => {
     event.stopPropagation();
 
-    const saveFn = updateMode ? updateAccountGroupFn : addAccountGroupFn;
+    const saveFn = updateMode
+      ? updateAccountGroupMutation
+      : createAccountGroupMutation;
     try {
-      await saveFn({
-        variables: { data: state.accountGroupInput },
+      const mutationResponse = await saveFn.mutateAsync({
+        ...state!,
       });
 
       message.success(
@@ -77,10 +73,7 @@ const AccountGroupFormModal = ({
         DEFAULT_SUCCESS_MESSAGE_DURATION
       );
 
-      const mutationInfo = updateMode
-        ? updateAccountGroupMutationInfo.loading
-        : addAccountGroupMutationInfo.loading;
-      onSave(mutationInfo);
+      await onSave(mutationResponse);
     } catch (error) {
       console.log('error', error);
       message.error(
@@ -94,8 +87,6 @@ const AccountGroupFormModal = ({
     event.stopPropagation();
     onCancel();
   };
-
-  console.log('rendeeeer');
 
   /*
    * Ui parts
@@ -116,15 +107,15 @@ const AccountGroupFormModal = ({
           onCancelClick={onCancelClick}
           loading={
             updateMode
-              ? updateAccountGroupMutationInfo.loading
-              : addAccountGroupMutationInfo.loading
+              ? updateAccountGroupMutation.isLoading
+              : createAccountGroupMutation.isLoading
           }
-          disabled={isEmpty(state.accountGroupInput.name)}
+          disabled={isEmpty(state?.name)}
         />
       }
     >
       <Input
-        value={state.accountGroupInput.name}
+        value={state?.name}
         onChange={onChange}
         size="large"
         placeholder={t('accountGroup.form.inputAccountGroupName')}

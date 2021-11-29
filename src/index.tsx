@@ -1,19 +1,15 @@
-import { ApolloProvider } from '@apollo/client';
 import 'antd/dist/antd.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { I18nextProvider } from 'react-i18next';
 import App from './App';
-import { graphqlClient } from './graphql/graphqlClient';
 import i18n from './i18n';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(
-  <ApolloProvider client={graphqlClient}>
-    <I18nextProvider i18n={i18n}>
-      <App />
-    </I18nextProvider>
-  </ApolloProvider>,
+  <I18nextProvider i18n={i18n}>
+    <App />
+  </I18nextProvider>,
   document.getElementById('root')
 );
 

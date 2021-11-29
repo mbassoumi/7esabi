@@ -5,7 +5,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Currency } from '../../graphql/gql/globalTypes';
+import { Currency } from '../../@types/enums';
 
 interface CurrencyIconProps {
   currencyType: Currency;

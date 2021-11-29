@@ -1,4 +1,3 @@
-import { useQuery } from '@apollo/client';
 import {
   faHandHoldingUsd,
   faUniversity,
@@ -6,36 +5,42 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Layout } from 'antd';
 import { isEmpty } from 'lodash';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RouteProps } from 'react-router-dom';
-import LoadingPageComponent from '../../components/shared/LoadingPageComponent';
-import { SESSION_DATA_QUERY } from '../../graphql/gql/auth/sessionData';
-import { GqlSessionDataQuery } from '../../graphql/gql/auth/types/GqlSessionDataQuery';
+import './styles/landingPage.scss';
 import { DEFAULT_OAUTH_URL } from '../../utils/envVars';
-import '../styles/landingPage.scss';
+import { useQuery } from 'react-query';
+import { User } from '../../@types/User';
+import { getCurrentUserApi } from '../../api/session';
+import LoadingPage from '../../components/shared/LoadingPage';
+import { queryKeyForCurrentUser } from '../../components/helpers/storeHelper';
 
-const LandingPage = ({ location }: RouteProps) => {
+const LandingPage = (_params: RouteProps) => {
   const { t } = useTranslation();
-  const { loading, data } = useQuery<GqlSessionDataQuery>(SESSION_DATA_QUERY, {
-    fetchPolicy: 'cache-only',
+
+  const {
+    isLoading,
+    isError,
+    error,
+    data: currentUser,
+  } = useQuery<User>(queryKeyForCurrentUser(), getCurrentUserApi, {
+    retry: false,
+    refetchOnWindowFocus: false,
+    useErrorBoundary: false,
   });
 
-  const onLoginClick = (event: any) => {
-    if (!isEmpty(data?.sessionData)) {
+  useEffect(() => {
+    if (!isLoading && !isEmpty(currentUser)) {
       window.location.assign(`/`);
-      return;
     }
+  }, [currentUser]);
 
-    const locationState = location?.state as any;
-    const loginUrl = locationState?.redirectUrl || DEFAULT_OAUTH_URL;
-    const originalPath = locationState?.originalPath;
-    const stateParam = isEmpty(originalPath) ? '' : `&state=${originalPath}`;
+  if (isLoading) return <LoadingPage />;
 
-    window.location.href = `${loginUrl}${stateParam}`;
+  const onLoginClick = (_event: any) => {
+    window.location.href = DEFAULT_OAUTH_URL;
   };
-
-  if (loading) return <LoadingPageComponent />;
 
   return (
     <Layout className="landing-page">

@@ -13,7 +13,7 @@ const Header = ({ title, actions }: HeaderProps) => {
   return (
     <div className="header__container">
       <div className="header__section">
-        <Link to="/">
+        <Link to="/" replace>
           <FontAwesomeIcon icon={faHome} color="white" />
         </Link>
       </div>

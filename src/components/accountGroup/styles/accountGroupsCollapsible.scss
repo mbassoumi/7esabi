@@ -5,20 +5,23 @@
     .ant-collapse-header {
       font-size: 18px;
     }
+
+    &__action-buttons {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 20px;
+
+      &__add-account {
+      }
+
+      &__archived-mode {
+        margin: auto 15px;
+      }
+    }
   }
 
   &__item {
     margin: 6px 0px;
     box-shadow: 0px 0px 2px black;
-  }
-
-  &__add-account {
-    display: flex;
-    justify-content: flex-start;
-    margin-bottom: 20px;
-
-    &__button {
-
-    }
   }
 }

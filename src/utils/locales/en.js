@@ -6,6 +6,12 @@ export default {
     },
 
     generic: {
+      entities: {
+        accountGroup: 'ِAccount Group',
+        account: 'ِAccount',
+        accountPermission: 'ِAccount Permission',
+        accountTransaction: 'ِTransaction',
+      },
       messages: {
         welcome: 'Welcome',
         loadingPleaseWait: 'Loading...',
@@ -49,18 +55,23 @@ export default {
         add: 'Add Account Group',
         edit: 'Edit Account Group',
         delete: 'Delete Account Group',
+        showArchived: 'Archived',
       },
       form: {
         title: {
           edit: 'Edit Account Group',
           create: 'New Account Group',
         },
+        archivedWarning: {
+          title: 'Archived',
+          body: 'Account will be automatically hidden from the accounts list in the dashboard (but will NOT be deleted)... You can always view archived accounts or undo an archive.',
+        },
         inputAccountGroupName: 'Account Group Name',
+        inputAccountGroupArchived: 'Archived',
       },
       deleteForm: {
         title: 'Delete Account Group',
-        body:
-          'Are you sure? If you delete an account group, all the accounts inside it and transactions on them will be deleted.',
+        body: 'Are you sure? If you delete an account group, all the accounts inside it (including archived accounts) and all their transactions on them will be deleted.',
       },
     },
 
@@ -91,8 +102,7 @@ export default {
       },
       deleteForm: {
         title: 'Delete Account',
-        body:
-          'Are you sure? If you delete this account, the transactions on it will be deleted as well.',
+        body: 'Are you sure? If you delete this account, the transactions on it will be deleted as well.',
       },
       currency: {
         NIS: 'shekel(s)',
@@ -109,8 +119,7 @@ export default {
         canEditColumn: 'Write Access',
         explanation: {
           title: 'Shared Accounts:',
-          body:
-            'Everyone in the list below can see the account and its transactions. However, only the ones with an enabled Edit Access would be able to add transactions to the account.',
+          body: 'Everyone in the list below can see the account and its transactions. However, only the ones with an enabled Edit Access would be able to add transactions to the account.',
         },
       },
       list: {
@@ -123,6 +132,7 @@ export default {
         add: 'Add Transaction',
         edit: 'Edit Transaction',
         delete: 'Delete Transaction',
+        filter: 'Filter',
       },
       form: {
         title: {
@@ -132,6 +142,10 @@ export default {
         inputAmount: 'Enter amount',
         inputDescription: 'Add description',
         selectDate: 'Select Date',
+      },
+      filters: {
+        startDate: 'Start Date',
+        endDate: 'End Date',
       },
       deleteForm: {
         title: 'Delete Transaction',
@@ -146,8 +160,10 @@ export default {
     },
 
     stats: {
+      negativeOrZeroBalances:
+        'Accounts total balance is zero or less. Cannot draw pie-chart!',
       selectAccountsPlaceholder: 'Select accounts',
-      totalAmount: 'Total amount',
+      totalBalance: 'Total amount',
       conversionApiIsDown:
         'Incorrect conversions! Currency conversion service is currently down.. Please try again later',
     },

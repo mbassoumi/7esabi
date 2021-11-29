@@ -1,0 +1,42 @@
+.landing-page {
+  background: url("../../../assets/landingPage.jpg");
+  height: 100vh;
+
+  &__header {
+    background: none;
+    margin-top: 100px;
+    margin-bottom: 50px;
+
+    &__text {
+      text-align: center;
+      font-size: 60px;
+      color: white;
+    }
+  }
+
+  &__content {
+    margin: 20px;
+    text-align: center;
+    font-size: 40px;
+
+    &__icons-line-1 {
+      color: ivory;
+      font-size: 160px;
+    }
+
+    &__icons-line-2 {
+      color: green;
+    }
+
+    &__login {
+      margin: 5px auto;
+
+      &__button {
+        width: auto;
+        height: auto;
+        font-size: 25px;
+      }
+    }
+  }
+
+}
