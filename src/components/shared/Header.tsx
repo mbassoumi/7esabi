@@ -23,6 +23,7 @@ const Header = ({ title, actions }: HeaderProps) => {
       <div className="header__section">
         <Button
           shape="circle"
+          type="link"
           icon={<FontAwesomeIcon icon={faHome} color="white" />}
           onClick={onHomeClick}
           className="header__home-button"

@@ -299,15 +299,14 @@ const AccountCard = ({
         {accountActionButtons()}
       </div>
       <div
+        className="account-card__container"
         onClick={accountCardClickHandler(account)}
         key={`account_${account.id}_div`}
       >
-        <div className="account-card__container">
-          {isSharedAccount ? sharedAccountInfo() : accountNameLine}
-          <div className="account-card__container__line">{balance()}</div>
-          <div className="account-card__container__line">
-            <div className="account-card__last-activity">{lastActivity()}</div>
-          </div>
+        {isSharedAccount ? sharedAccountInfo() : accountNameLine}
+        <div className="account-card__container__line">{balance()}</div>
+        <div className="account-card__container__line">
+          <div className="account-card__last-activity">{lastActivity()}</div>
         </div>
       </div>
     </div>

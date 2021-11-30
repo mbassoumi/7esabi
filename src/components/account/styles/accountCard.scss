@@ -1,8 +1,10 @@
 .account-card {
     padding: 0px;
+    cursor: pointer;
 
     &__full-size {
         @extend .account-card;
+        cursor: auto;
         padding-bottom: 35px;
         border-bottom: 1px dashed green;
     }
