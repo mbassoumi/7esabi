@@ -76,7 +76,7 @@ const TransactionsList = ({
 
   const queryKeyBase = singleAccountMode
     ? queryKeyForAccountTransactionsList(singleAccount!.id)
-    : (['combinedTransactionsList', JSON.stringify(state.filters)] as any);
+    : (['combinedTransactionsList'] as any);
 
   const {
     isLoading,
@@ -84,7 +84,7 @@ const TransactionsList = ({
     data: transactionsResponse,
     isPreviousData,
   } = useQuery(
-    queryKeyBase.concat([state.currentPage]),
+    queryKeyBase.concat([state.currentPage, JSON.stringify(state.filters)]),
     () =>
       listTransactionsApi(state.filters, state.currentPage, DEFAULT_PAGE_SIZE),
     {
