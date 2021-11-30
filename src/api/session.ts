@@ -2,8 +2,16 @@ import { API_SERVER } from '../utils/envVars';
 import { getRequest } from './apiHelper';
 import { User } from '../@types/User';
 
+export interface LogoutResponse {
+  signed_out: boolean;
+  redirect_url: string;
+}
+
 export const logoutRequestApi = async () => {
-  const apiResponse = await getRequest(`${API_SERVER}/sessions/logout`, {});
+  const apiResponse = await getRequest<LogoutResponse>(
+    `${API_SERVER}/sessions/logout`,
+    {}
+  );
   return apiResponse.data!;
 };
 

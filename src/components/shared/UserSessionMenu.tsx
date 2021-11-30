@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getCachedCurrentUser } from '../helpers/storeHelper';
 import './styles/userSessionMenu.scss';
-import { logoutRequestApi } from '../../api/session';
+import { logoutRequestApi, LogoutResponse } from '../../api/session';
 import {
   showGenericOperationFailedMessage,
   userFullName,
@@ -43,9 +43,15 @@ const UserSessionMenu = () => {
 
     setLogoutButtonLoading(true);
 
+    let logoutResponse: LogoutResponse;
     // logout backend
     try {
-      await logoutRequestApi();
+      logoutResponse = await logoutRequestApi();
+      if (!logoutResponse.signed_out) {
+        showGenericOperationFailedMessage(null, t);
+        setLogoutButtonLoading(false);
+        return;
+      }
     } catch (e) {
       showGenericOperationFailedMessage(e, t);
       setLogoutButtonLoading(false);
@@ -55,7 +61,8 @@ const UserSessionMenu = () => {
     // clear frontend store
     await queryClient.clear();
 
-    window.location.assign('/welcome');
+    // logout from oauth provider
+    window.location.href = logoutResponse.redirect_url;
   };
 
   const popoverContent = (

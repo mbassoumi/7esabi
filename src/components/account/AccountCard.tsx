@@ -4,7 +4,7 @@ import { Button, Tooltip } from 'antd';
 import { isEmpty } from 'lodash';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   getCachedCurrentUser,
   getCachedUserInfo,
@@ -40,6 +40,7 @@ const AccountCard = ({
   isInFullAccountMode = false,
 }: AccountCardProps) => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const currentUser = getCachedCurrentUser();
   const accountUser = getCachedUserInfo(account.account_group.user_id)!;
   const lastTransactionUser = account.last_transaction?.user_id
@@ -280,6 +281,13 @@ const AccountCard = ({
     );
   };
 
+  const accountCardClickHandler = (account: Account) => {
+    return (e: any) =>
+      navigate(
+        `/accountGroup/${account.account_group.id}/account/${account.id}`
+      );
+  };
+
   const entityControlButtonsRtlClass: any =
     i18n.dir() === 'rtl' ? 'account-card__entity-control-buttons__rtl' : '';
 
@@ -290,10 +298,9 @@ const AccountCard = ({
       >
         {accountActionButtons()}
       </div>
-      <Link
-        to={`/accountGroup/${account.account_group.id}/account/${account.id}`}
-        key={`account_${account.id}_link`}
-        replace
+      <div
+        onClick={accountCardClickHandler(account)}
+        key={`account_${account.id}_div`}
       >
         <div className="account-card__container">
           {isSharedAccount ? sharedAccountInfo() : accountNameLine}
@@ -302,7 +309,7 @@ const AccountCard = ({
             <div className="account-card__last-activity">{lastActivity()}</div>
           </div>
         </div>
-      </Link>
+      </div>
     </div>
   );
 
