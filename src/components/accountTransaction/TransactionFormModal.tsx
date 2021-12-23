@@ -60,7 +60,7 @@ const TransactionFormModal = ({
       transaction_type: updateMode
         ? transaction!.transaction_type
         : AccountTransactionType.CREDIT,
-      amount: updateMode ? transaction!.amount : 0,
+      amount: updateMode ? transaction!.amount : (undefined as any),
       description: updateMode ? transaction!.description : '',
       date: updateMode
         ? transaction!.date
