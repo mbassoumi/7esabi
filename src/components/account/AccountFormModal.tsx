@@ -222,8 +222,8 @@ const AccountFormModal = ({
         )}
         {state.accountParams.archived && (
           <Alert
-            message={t('accountGroup.form.archivedWarning.title')}
-            description={t('accountGroup.form.archivedWarning.body')}
+            message={t('account.form.archivedWarning.title')}
+            description={t('account.form.archivedWarning.body')}
             type="warning"
             showIcon
             style={{ marginBottom: '5px' }}

@@ -62,12 +62,12 @@ export default {
           edit: 'Edit Account Group',
           create: 'New Account Group',
         },
-        archivedWarning: {
-          title: 'Archived',
-          body: 'Account will be automatically hidden from the accounts list in the dashboard (but will NOT be deleted)... You can always view archived accounts or undo an archive.',
-        },
         inputAccountGroupName: 'Account Group Name',
         inputAccountGroupArchived: 'Archived',
+        archivedWarning: {
+          title: 'Archived',
+          body: 'Account Group will be automatically hidden from the list in the dashboard (but will NOT be deleted)... You can always view archived account accounts or undo an archive.',
+        },
       },
       deleteForm: {
         title: 'Delete Account Group',
@@ -99,6 +99,10 @@ export default {
         selectCurrency: 'Select Currency',
         inputAccountName: 'Enter Account Name',
         permissionsSectionHeader: 'Permissions Control',
+        archivedWarning: {
+          title: 'Archived',
+          body: 'Account will be automatically hidden from the accounts list in the dashboard (but will NOT be deleted)... You can always view archived accounts or undo an archive.',
+        },
       },
       deleteForm: {
         title: 'Delete Account',

@@ -1,4 +1,4 @@
-import { Input, message, Modal } from 'antd';
+import { Alert, Checkbox, Input, message, Modal } from 'antd';
 import { isEmpty } from 'lodash';
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,8 +14,12 @@ import {
   createAccountGroupApi,
   updateAccountGroupApi,
 } from '../../api/accountGroup';
+import { CheckboxChangeEvent } from 'antd/es/checkbox';
+import { initAccountGroupParams } from '../../utils/helpers';
 
-type AccountGroupModalState = AccountGroupParams | undefined;
+interface AccountGroupModalState {
+  accountGroupParams: AccountGroupParams;
+}
 
 interface AccountGroupModalProps {
   onSave: (mutationInfo: any) => any;
@@ -38,23 +42,33 @@ const AccountGroupFormModal = ({
       updateAccountGroupApi(accountGroup!.id, accountGroupParams)
   );
 
-  const [state, setState] = useState<AccountGroupModalState>();
+  const [state, setState] = useState<AccountGroupModalState>({
+    accountGroupParams: initAccountGroupParams(),
+  });
 
   useEffect(() => {
     if (updateMode) {
-      setState({ name: accountGroup!.name });
+      setState({ accountGroupParams: initAccountGroupParams(accountGroup!) });
     }
   }, []);
 
   /*
    * Actions and events handlers
    */
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.value;
-    setState((state: AccountGroupModalState) => ({
+
+  const onParamChanged = (fieldName: string, fieldValue: string | boolean) =>
+    setState((state) => ({
       ...state,
-      name,
+      accountGroupParams: {
+        ...state?.accountGroupParams,
+        [fieldName]: fieldValue,
+      } as AccountGroupParams,
     }));
+
+  const onInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const fieldName = e.target.name;
+    const fieldValue = e.target.value;
+    onParamChanged(fieldName, fieldValue);
   };
 
   const onSaveClick = async (event: any) => {
@@ -65,7 +79,7 @@ const AccountGroupFormModal = ({
       : createAccountGroupMutation;
     try {
       const mutationResponse = await saveFn.mutateAsync({
-        ...state!,
+        ...state!.accountGroupParams!,
       });
 
       message.success(
@@ -91,6 +105,19 @@ const AccountGroupFormModal = ({
   /*
    * Ui parts
    */
+
+  const onArchivedChange = (e: CheckboxChangeEvent) =>
+    onParamChanged('archived', e.target.checked);
+
+  const archivedInput = () => (
+    <Checkbox
+      checked={state?.accountGroupParams!.archived}
+      onChange={onArchivedChange}
+    >
+      {t('accountGroup.form.inputAccountGroupArchived')}
+    </Checkbox>
+  );
+
   return (
     <Modal
       visible={true}
@@ -110,16 +137,27 @@ const AccountGroupFormModal = ({
               ? updateAccountGroupMutation.isLoading
               : createAccountGroupMutation.isLoading
           }
-          disabled={isEmpty(state?.name)}
+          disabled={isEmpty(state?.accountGroupParams.name)}
         />
       }
     >
       <Input
-        value={state?.name}
-        onChange={onChange}
+        name="name"
+        value={state?.accountGroupParams.name}
+        onChange={onInputChange}
         size="large"
         placeholder={t('accountGroup.form.inputAccountGroupName')}
       />
+      {updateMode && <div>{archivedInput()}</div>}
+      {state?.accountGroupParams.archived && (
+        <Alert
+          message={t('accountGroup.form.archivedWarning.title')}
+          description={t('accountGroup.form.archivedWarning.body')}
+          type="warning"
+          showIcon
+          style={{ marginBottom: '5px' }}
+        />
+      )}
     </Modal>
   );
 };

@@ -41,7 +41,9 @@ interface AccountStatsModalState {
 
 const extractAllAccounts = (accountGroups: AccountGroup[]) => {
   const accountsList = flatten(
-    accountGroups?.map((accountGroup) => accountGroup.accounts || []) || []
+    filter(accountGroups, (accountGroup) => !accountGroup.archived)?.map(
+      (accountGroup) => accountGroup.accounts || []
+    ) || []
   );
   return filter(accountsList, (account) => !account.archived);
 };

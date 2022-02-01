@@ -7,6 +7,8 @@ import { AccountPermission } from '../@types/AccountPermission';
 import { format, parseISO } from 'date-fns';
 import { message } from 'antd';
 import { TFunction } from 'i18next';
+import { AccountGroup } from '../@types/AccountGroup';
+import { AccountGroupParams } from '../api/accountGroup';
 
 export const userFullName = (user: User) =>
   `${user.first_name} ${user.last_name}`;
@@ -57,4 +59,16 @@ export const initAccountParams = (account?: Account): AccountParams => {
   }
 
   return { currency: Currency.USD, archived: false, permissions: [] } as any;
+};
+
+export const initAccountGroupParams = (
+  accountGroup?: AccountGroup
+): AccountGroupParams => {
+  if (accountGroup) {
+    return {
+      ...pick(accountGroup, ['name', 'archived']),
+    };
+  }
+
+  return { archived: false } as any;
 };

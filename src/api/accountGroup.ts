@@ -9,6 +9,7 @@ import {
 
 export interface AccountGroupParams {
   name: string;
+  archived: boolean;
 }
 
 export const listAccountGroupApi = async () => {

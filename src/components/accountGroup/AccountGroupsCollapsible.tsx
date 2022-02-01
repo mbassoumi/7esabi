@@ -23,6 +23,7 @@ import { concat, filter, includes, without } from 'lodash';
 import { Account } from '../../@types/Account';
 
 interface AccountGroupsCollapsibleState {
+  globalArchivedMode: boolean;
   inArchivedMode: number[];
   selectedAccountGroup: AccountGroup | null;
   accountFormModalVisible: boolean;
@@ -35,6 +36,7 @@ const AccountGroupsCollapsible = ({}) => {
   const accountGroups = getCachedAccountGroups();
 
   const [state, setState] = useState<AccountGroupsCollapsibleState>({
+    globalArchivedMode: false,
     inArchivedMode: [],
     selectedAccountGroup: null,
     accountFormModalVisible: false,
@@ -156,14 +158,72 @@ const AccountGroupsCollapsible = ({}) => {
 
   const filteredAccountsList = (accountGroup: AccountGroup) => {
     const accounts = accountGroup!.accounts || [];
+
+    // don't filter accounts if we are showing only archived account groups (i.e. the whole account group is archived)
+    if (state.globalArchivedMode) {
+      return accounts;
+    }
+
     const archivedMode = includes(state.inArchivedMode, accountGroup.id);
     return (
-      filter(accounts, (account) => account.archived == archivedMode) ||
+      filter(accounts, (account) => account.archived === archivedMode) ||
       ([] as Account[])
     );
   };
 
-  const archivedModeSwitch = (accountGroup: AccountGroup) => {
+  const filteredAccountGroupsList = () => {
+    return (
+      filter(
+        accountGroups,
+        (accountGroup) =>
+          accountGroup.archived === (state.globalArchivedMode || false)
+      ) || ([] as AccountGroup[])
+    );
+  };
+
+  const setArchivedAccountGroupsButton = (globalArchivedMode: boolean) => {
+    setState((state) => {
+      return {
+        ...state,
+        globalArchivedMode: globalArchivedMode,
+      };
+    });
+  };
+
+  const archivedAccountGroupsModeSwitch = () => {
+    const archivedAccountGroupsCount =
+      filter(
+        accountGroups || [],
+        (accountGroup) => accountGroup.archived == true
+      )?.length || 0;
+
+    const switchLabel = `${t(
+      'accountGroup.actions.showArchived'
+    )} (${archivedAccountGroupsCount})`;
+
+    return (
+      <Switch
+        className="account-groups-collapsible__panel__action-buttons__archived-mode"
+        onChange={(enabled) => setArchivedAccountGroupsButton(enabled)}
+        checkedChildren={
+          <span>
+            {' '}
+            <FontAwesomeIcon icon={faEye} />
+            {switchLabel}
+          </span>
+        }
+        unCheckedChildren={
+          <span>
+            <FontAwesomeIcon icon={faEyeSlash} color="gray" />
+            {switchLabel}
+          </span>
+        }
+        checked={state.globalArchivedMode}
+      />
+    );
+  };
+
+  const archivedAccountsModeSwitch = (accountGroup: AccountGroup) => {
     const archivedAccountsCount =
       filter(accountGroup.accounts || [], (account) => account.archived == true)
         ?.length || 0;
@@ -207,7 +267,7 @@ const AccountGroupsCollapsible = ({}) => {
       onClick={(event) => event.stopPropagation()}
     >
       {!isSharedGroup && addAccountButton(accountGroup)}
-      {archivedModeSwitch(accountGroup)}
+      {!state.globalArchivedMode && archivedAccountsModeSwitch(accountGroup)}
     </div>
   );
 
@@ -255,12 +315,13 @@ const AccountGroupsCollapsible = ({}) => {
       {accountFormModal}
       {accountGroupFormModal}
       {deleteAccountGroupModal}
+      {archivedAccountGroupsModeSwitch()}
       <Collapse
         defaultActiveKey={[1]}
         className="account-groups-collapsible"
         key="0-1"
       >
-        {accountGroups?.map((accountGroup) =>
+        {filteredAccountGroupsList()?.map((accountGroup) =>
           accountGroupCollapsePanel(accountGroup)
         )}
       </Collapse>
